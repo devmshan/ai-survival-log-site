@@ -9,9 +9,10 @@ export const mdxComponents = {
     return <pre {...props}>{children}</pre>
   },
   code: ({ className, children, ...props }: React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }) => {
+    const isCodeBlock = className?.startsWith('language-')
     return (
       <code
-        className={`${className ?? ''} bg-muted px-1 py-0.5 rounded text-sm`}
+        className={isCodeBlock ? className : `${className ?? ''} bg-muted px-1 py-0.5 rounded text-sm font-mono`}
         {...props}
       >
         {children}
