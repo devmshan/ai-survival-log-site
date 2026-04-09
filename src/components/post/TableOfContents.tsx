@@ -15,11 +15,13 @@ export function TableOfContents() {
     const content = document.getElementById('post-content')
     if (!content) return
     const elements = content.querySelectorAll('h2, h3')
-    const items: Heading[] = Array.from(elements).map(el => ({
-      id: el.id,
-      text: el.textContent ?? '',
-      level: parseInt(el.tagName[1]),
-    }))
+    const items: Heading[] = Array.from(elements)
+      .filter(el => !el.closest('.sr-only') && el.id)
+      .map(el => ({
+        id: el.id,
+        text: el.textContent ?? '',
+        level: parseInt(el.tagName[1]),
+      }))
     setHeadings(items)
   }, [])
 
