@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(apiKey)
     await resend.contacts.create({
       email,
-      audienceId: process.env.RESEND_AUDIENCE_ID ?? '',
+      segments: [{ id: process.env.RESEND_SEGMENT_ID ?? '' }],
     })
     return NextResponse.json({ success: true })
   } catch (error) {
