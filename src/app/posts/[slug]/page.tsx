@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
+import rehypeSlug from 'rehype-slug'
 import { getAllPosts, getPostBySlug } from '@/lib/posts'
 import { mdxComponents } from '@/components/mdx/MDXComponents'
 import { TableOfContents } from '@/components/post/TableOfContents'
@@ -63,7 +64,7 @@ export default async function PostPage({ params }: Props) {
           <MDXRemote
             source={post.content}
             components={mdxComponents}
-            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+            options={{ mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeSlug] } }}
           />
         </div>
         <aside className="hidden lg:block sticky top-8 h-fit">
