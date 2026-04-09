@@ -12,7 +12,9 @@ export function TableOfContents() {
   const [headings, setHeadings] = useState<Heading[]>([])
 
   useEffect(() => {
-    const elements = document.querySelectorAll('h2, h3')
+    const content = document.getElementById('post-content')
+    if (!content) return
+    const elements = content.querySelectorAll('h2, h3')
     const items: Heading[] = Array.from(elements).map(el => ({
       id: el.id,
       text: el.textContent ?? '',

@@ -60,7 +60,7 @@ export default async function PostPage({ params }: Props) {
       </header>
 
       <div className="lg:grid lg:grid-cols-[1fr_200px] lg:gap-8">
-        <div className="prose prose-neutral dark:prose-invert max-w-none">
+        <div id="post-content" className="prose prose-neutral dark:prose-invert max-w-none">
           <MDXRemote
             source={post.content}
             components={mdxComponents}
