@@ -28,8 +28,8 @@ export function NewsletterForm() {
 
   return (
     <div className="text-center max-w-md mx-auto">
-      <h3 className="font-semibold text-lg mb-1">새 글 알림 받기</h3>
-      <p className="text-sm text-muted-foreground mb-4">
+      <h3 className="font-semibold mb-1">새 글 알림 받기</h3>
+      <p className="text-sm text-muted-foreground mb-3">
         새 포스트가 올라오면 이메일로 알려드립니다.
       </p>
       {status === 'success' ? (
