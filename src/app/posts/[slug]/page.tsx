@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
 import { getAllPosts, getPostBySlug } from '@/lib/posts'
 import { mdxComponents } from '@/components/mdx/MDXComponents'
 import { TableOfContents } from '@/components/post/TableOfContents'
@@ -59,7 +60,11 @@ export default async function PostPage({ params }: Props) {
 
       <div className="lg:grid lg:grid-cols-[1fr_200px] lg:gap-8">
         <div className="prose prose-neutral dark:prose-invert max-w-none">
-          <MDXRemote source={post.content} components={mdxComponents} />
+          <MDXRemote
+            source={post.content}
+            components={mdxComponents}
+            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+          />
         </div>
         <aside className="hidden lg:block sticky top-8 h-fit">
           <TableOfContents />
