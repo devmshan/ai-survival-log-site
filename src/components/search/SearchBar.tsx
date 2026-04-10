@@ -45,7 +45,7 @@ export function SearchBar({ posts }: SearchBarProps) {
   }
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
       <CommandInput
         placeholder="글 검색..."
         value={query}
