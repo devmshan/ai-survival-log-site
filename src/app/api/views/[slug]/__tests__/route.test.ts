@@ -1,15 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 
-const { mockGet, mockIncr } = vi.hoisted(() => ({
+const { mockGet, mockIncr, mockSet } = vi.hoisted(() => ({
   mockGet: vi.fn(),
   mockIncr: vi.fn(),
+  mockSet: vi.fn(),
 }))
 
 vi.mock('@vercel/kv', () => ({
   kv: {
     get: mockGet,
     incr: mockIncr,
+    set: mockSet,
   },
 }))
 
@@ -61,7 +63,9 @@ describe('GET /api/views/[slug]', () => {
 
 describe('POST /api/views/[slug]', () => {
   it('올바른 KV 키로 INCR을 호출한다', async () => {
+    mockGet.mockResolvedValue(null)
     mockIncr.mockResolvedValue(1)
+    mockSet.mockResolvedValue('OK')
     const res = await POST(makeRequest('POST') as unknown as NextRequest, makeParams('my-post'))
     expect(mockIncr).toHaveBeenCalledWith('views:my-post')
     const json = await res.json()
@@ -69,8 +73,17 @@ describe('POST /api/views/[slug]', () => {
     expect(res.status).toBe(200)
   })
 
+  it('이미 방문한 IP면 INCR을 호출하지 않는다', async () => {
+    mockGet.mockResolvedValue(1)
+    const res = await POST(makeRequest('POST') as unknown as NextRequest, makeParams('my-post'))
+    expect(mockIncr).not.toHaveBeenCalled()
+    const json = await res.json()
+    expect(json).toEqual({ success: true })
+    expect(res.status).toBe(200)
+  })
+
   it('KV 오류 시 500을 반환한다', async () => {
-    mockIncr.mockRejectedValue(new Error('KV error'))
+    mockGet.mockRejectedValue(new Error('KV error'))
     const res = await POST(makeRequest('POST') as unknown as NextRequest, makeParams('my-post'))
     expect(res.status).toBe(500)
     const json = await res.json()

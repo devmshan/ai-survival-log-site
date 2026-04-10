@@ -24,13 +24,22 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
-export async function POST(_req: NextRequest, { params }: Params) {
+export async function POST(req: NextRequest, { params }: Params) {
   const { slug } = await params
   if (!VALID_SLUG_PATTERN.test(slug)) {
-    return NextResponse.json({ success: false, error: 'Invalid slug' }, { status: 400 })
+    return NextResponse.json(
+      { success: false, error: 'Invalid slug' },
+      { status: 400 }
+    )
   }
   try {
-    await kv.incr(`${KV_VIEWS_PREFIX}${slug}`)
+    const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
+    const dedupeKey = `viewed:${ip}:${slug}`
+    const alreadyViewed = await kv.get(dedupeKey)
+    if (!alreadyViewed) {
+      await kv.incr(`${KV_VIEWS_PREFIX}${slug}`)
+      await kv.set(dedupeKey, 1, { ex: 3600 })
+    }
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json(

@@ -12,7 +12,10 @@ export function ViewCount({ slug }: ViewCountProps) {
 
   useEffect(() => {
     fetch(`/api/views/${slug}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
       .then(json => {
         if (json.success) setViews(json.data.views)
       })
