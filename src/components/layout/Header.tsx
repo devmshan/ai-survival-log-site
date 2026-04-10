@@ -4,9 +4,11 @@ import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { Moon, Sun, Search } from 'lucide-react'
+import { useSearch } from '@/contexts/SearchContext'
 
 export function Header() {
   const { theme, setTheme } = useTheme()
+  const { setOpen } = useSearch()
 
   return (
     <header className="border-b">
@@ -22,7 +24,7 @@ export function Header() {
             variant="ghost"
             size="icon"
             aria-label="검색"
-            onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+            onClick={() => setOpen(true)}
           >
             <Search className="h-4 w-4" />
           </Button>

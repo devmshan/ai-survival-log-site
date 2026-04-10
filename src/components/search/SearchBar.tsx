@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   CommandDialog,
@@ -11,19 +11,22 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { createSearchIndex } from '@/lib/search'
+import { useSearch } from '@/contexts/SearchContext'
 import type { PostMeta } from '@/lib/types'
+
+const MAX_RESULTS = 8
 
 interface SearchBarProps {
   posts: PostMeta[]
 }
 
 export function SearchBar({ posts }: SearchBarProps) {
-  const [open, setOpen] = useState(false)
+  const { open, setOpen } = useSearch()
   const [query, setQuery] = useState('')
   const router = useRouter()
 
-  const fuse = createSearchIndex(posts)
-  const results = query ? fuse.search(query).slice(0, 8) : []
+  const fuse = useMemo(() => createSearchIndex(posts), [posts])
+  const results = query ? fuse.search(query).slice(0, MAX_RESULTS) : []
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -34,7 +37,7 @@ export function SearchBar({ posts }: SearchBarProps) {
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [setOpen])
 
   function handleSelect(slug: string) {
     setOpen(false)

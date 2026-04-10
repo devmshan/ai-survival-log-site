@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { getAllPosts } from '@/lib/posts'
 import { SearchBar } from '@/components/search/SearchBar'
+import { SearchProvider } from '@/contexts/SearchContext'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -24,14 +25,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="min-h-screen flex flex-col">
-            <SearchBar posts={posts} />
-            <Header />
-            <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-              {children}
-            </main>
-            <Footer />
-          </div>
+          <SearchProvider>
+            <div className="min-h-screen flex flex-col">
+              <SearchBar posts={posts} />
+              <Header />
+              <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </SearchProvider>
         </ThemeProvider>
       </body>
     </html>
