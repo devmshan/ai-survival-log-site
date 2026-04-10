@@ -2,48 +2,30 @@
 
 **Date:** 2026-04-10
 **Status:** Approved
-**Topic:** 도메인 방문자 추적 + 게시글 조회수 표시
+**Topic:** 게시글 조회수 표시 + 도메인 방문자 내부 추적
 
 ---
 
 ## 목표
 
-1. **도메인 방문자 수** (Total / Today / Yesterday) 를 사이트 Footer에 공개 표시
-2. **게시글 조회수** 를 홈 게시글 카드에 공개 표시
+1. **게시글 조회수** 를 홈 게시글 카드에 공개 표시 (`👁 123`)
+2. **도메인 방문자 수** 는 Vercel Analytics 대시보드에서 내부 확인 (사이트에 미표시)
+
+> 개인 블로그에서 방문자 수 공개 표시는 초반 낮은 숫자로 역효과가 날 수 있고
+> 올드한 느낌을 줄 수 있어 제외. 게시글 조회수만 독자에게 유용한 정보로 노출.
 
 ---
 
 ## 스택
 
 - **저장소:** Vercel KV (Redis) — `@vercel/kv` 패키지
+- **도메인 방문자:** Vercel Analytics (대시보드 전용, 코드 1줄)
 - **배포:** Vercel (기존)
 - **렌더링:** Next.js 16 App Router, Client Components for live data
 
 ---
 
 ## 아키텍처
-
-### 도메인 방문자 추적
-
-```
-사용자 페이지 방문 (any page)
-  → VisitorTracker (Client Component, layout.tsx에 삽입)
-    → useEffect → POST /api/visitors
-      → KV INCR "visitors:total"
-      → KV INCR "visitors:YYYY-MM-DD"  (오늘 날짜)
-
-Footer 렌더
-  → VisitorStats (Client Component)
-    → GET /api/visitors
-      → { total, today, yesterday }
-      → Display: Total Visitors | Today's Visitors | Yesterday's Visitors
-```
-
-**KV 키 구조:**
-| 키 | 설명 |
-|----|------|
-| `visitors:total` | 전체 누적 방문자 수 |
-| `visitors:YYYY-MM-DD` | 해당 날짜 방문자 수 (UTC 기준) |
 
 ### 게시글 조회수
 
@@ -65,32 +47,15 @@ Footer 렌더
 |----|------|
 | `views:{slug}` | 해당 포스트 조회수 |
 
+### 도메인 방문자 (Vercel Analytics)
+
+- `@vercel/analytics` 패키지 설치
+- `layout.tsx`에 `<Analytics />` 추가 (1줄)
+- Vercel 대시보드 → Analytics 탭에서 일일/전체 방문자 확인
+
 ---
 
 ## API 설계
-
-### `GET /api/visitors`
-
-응답:
-```json
-{
-  "success": true,
-  "data": {
-    "total": 1234,
-    "today": 42,
-    "yesterday": 87
-  }
-}
-```
-
-### `POST /api/visitors`
-
-요청: body 없음
-동작: `visitors:total` + `visitors:YYYY-MM-DD` 원자적 증가
-응답:
-```json
-{ "success": true }
-```
 
 ### `GET /api/views/[slug]`
 
@@ -102,10 +67,12 @@ Footer 렌더
 }
 ```
 
+- `views:{slug}` 키가 없으면 `views: 0` 반환
+
 ### `POST /api/views/[slug]`
 
 요청: body 없음
-동작: `views:{slug}` 원자적 증가
+동작: `views:{slug}` 원자적 증가 (KV INCR)
 응답:
 ```json
 { "success": true }
@@ -115,28 +82,11 @@ Footer 렌더
 
 ## 컴포넌트 설계
 
-### VisitorTracker (`src/components/analytics/VisitorTracker.tsx`)
-
-- `"use client"`
-- `useEffect`에서 `POST /api/visitors` 호출 (마운트 시 1회)
-- UI 없음 (invisible tracker)
-
-### VisitorStats (`src/components/analytics/VisitorStats.tsx`)
-
-- `"use client"`
-- 마운트 시 `GET /api/visitors` fetch
-- 로딩 중: `—` 표시 (skeleton 없이 단순 처리)
-- 표시 형식:
-
-```
-Total Visitors: 1,234 | Today's Visitors: 42 | Yesterday's Visitors: 87
-```
-
 ### ViewTracker (`src/components/post/ViewTracker.tsx`)
 
 - `"use client"`
 - `useEffect`에서 `POST /api/views/[slug]` 호출 (마운트 시 1회)
-- UI 없음
+- UI 없음 (invisible tracker)
 
 ### ViewCount (`src/components/post/ViewCount.tsx`)
 
@@ -151,14 +101,10 @@ Total Visitors: 1,234 | Today's Visitors: 42 | Yesterday's Visitors: 87
 
 | 파일 | 변경 내용 |
 |------|----------|
-| `src/app/api/visitors/route.ts` | 신규: GET + POST |
 | `src/app/api/views/[slug]/route.ts` | 신규: GET + POST |
-| `src/components/analytics/VisitorTracker.tsx` | 신규 |
-| `src/components/analytics/VisitorStats.tsx` | 신규 |
-| `src/components/post/ViewTracker.tsx` | 신규 |
-| `src/components/post/ViewCount.tsx` | 신규 |
-| `src/app/layout.tsx` | VisitorTracker 추가 |
-| `src/components/layout/Footer.tsx` | VisitorStats 추가 |
+| `src/components/post/ViewTracker.tsx` | 신규: 조회수 증가 Client Component |
+| `src/components/post/ViewCount.tsx` | 신규: 조회수 표시 Client Component |
+| `src/app/layout.tsx` | `<Analytics />` 추가 (Vercel Analytics) |
 | `src/components/post/PostCard.tsx` | ViewCount 추가 |
 | `src/app/posts/[slug]/page.tsx` | ViewTracker 추가 |
 
@@ -175,19 +121,21 @@ Total Visitors: 1,234 | Today's Visitors: 42 | Yesterday's Visitors: 87
 ## 테스트 계획
 
 - API route 유닛 테스트 (KV mock)
-  - GET /api/visitors: 정상 응답, KV 오류 시 에러 응답
-  - POST /api/visitors: INCR 호출 확인
-  - GET /api/views/[slug]: 정상 응답, 키 없을 때 0 반환
-  - POST /api/views/[slug]: INCR 호출 확인
+  - `GET /api/views/[slug]`: 정상 응답, 키 없을 때 `0` 반환, KV 오류 시 에러 응답
+  - `POST /api/views/[slug]`: INCR 호출 확인
 - 컴포넌트 테스트
-  - ViewCount: 로딩 상태, 숫자 표시
-  - VisitorStats: 로딩 상태, 숫자 표시
+  - `ViewCount`: 로딩 상태(`—`), 숫자 표시, fetch 실패 시 `—` 유지
 
 ---
 
 ## 설정 요구사항
 
-Vercel 대시보드에서:
-1. Storage → KV 생성
-2. 프로젝트에 연결 (환경변수 자동 주입: `KV_URL`, `KV_REST_API_URL`, `KV_REST_API_TOKEN` 등)
-3. 로컬 개발: `vercel env pull .env.local` 로 환경변수 다운로드
+**Vercel 대시보드:**
+1. Storage → KV 생성 및 프로젝트 연결
+   - 환경변수 자동 주입: `KV_REST_API_URL`, `KV_REST_API_TOKEN`
+2. Analytics → Enable
+
+**로컬 개발:**
+```bash
+vercel env pull .env.local
+```
