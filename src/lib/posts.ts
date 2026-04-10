@@ -28,7 +28,7 @@ export function getAllPosts(): PostMeta[] {
       } satisfies PostMeta
     })
     .filter(post => !post.draft)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
 
 export function getPostBySlug(slug: string): Post {
