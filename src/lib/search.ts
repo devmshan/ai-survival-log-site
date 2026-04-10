@@ -9,5 +9,6 @@ export function createSearchIndex(posts: PostMeta[]) {
       { name: 'tags', weight: 0.1 },
     ],
     threshold: 0.4,
+    ignoreLocation: true,
   })
 }
