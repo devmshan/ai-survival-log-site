@@ -7,6 +7,7 @@ import { mdxComponents } from '@/components/mdx/MDXComponents'
 import { TableOfContents } from '@/components/post/TableOfContents'
 import { PrevNextNav } from '@/components/post/PrevNextNav'
 import { GiscusComments } from '@/components/post/GiscusComments'
+import { ViewTracker } from '@/components/post/ViewTracker'
 import { Badge } from '@/components/ui/badge'
 import type { Metadata } from 'next'
 
@@ -45,6 +46,7 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <article>
+      <ViewTracker slug={slug} />
       <header className="mb-8">
         <div className="flex flex-wrap gap-2 mb-3">
           {post.tags.map(tag => (
