@@ -12,6 +12,7 @@ describe('ViewCount', () => {
       'fetch',
       vi.fn().mockImplementation(
         () => new Promise(resolve => setTimeout(() => resolve({
+          ok: true,
           json: () => Promise.resolve({ success: true, data: { views: 42 } }),
         }), 500))
       )
@@ -22,6 +23,7 @@ describe('ViewCount', () => {
 
   it('fetch 성공 시 조회수를 표시한다', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
       json: () => Promise.resolve({ success: true, data: { views: 42 } }),
     }))
     render(<ViewCount slug="my-post" />)
@@ -40,6 +42,7 @@ describe('ViewCount', () => {
 
   it('올바른 엔드포인트를 호출한다', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
       json: () => Promise.resolve({ success: true, data: { views: 0 } }),
     })
     vi.stubGlobal('fetch', mockFetch)
