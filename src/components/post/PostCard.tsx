@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { ViewCount } from '@/components/post/ViewCount'
 import type { PostMeta } from '@/lib/types'
 
 interface PostCardProps {
@@ -38,6 +39,8 @@ export function PostCard({ post }: PostCardProps) {
             <span>{post.date}</span>
             <span>·</span>
             <span>{post.readingTime}</span>
+            <span>·</span>
+            <ViewCount slug={post.slug} />
           </div>
         </CardContent>
       </Card>
