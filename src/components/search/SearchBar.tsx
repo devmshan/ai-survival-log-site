@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   CommandDialog,
@@ -10,7 +10,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { createSearchIndex } from '@/lib/search'
+import { searchPosts } from '@/lib/search'
 import { useSearch } from '@/contexts/SearchContext'
 import type { PostMeta } from '@/lib/types'
 
@@ -25,8 +25,11 @@ export function SearchBar({ posts }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const router = useRouter()
 
-  const fuse = useMemo(() => createSearchIndex(posts), [posts])
-  const results = query ? fuse.search(query).slice(0, MAX_RESULTS) : []
+  const results = searchPosts(posts, query).slice(0, MAX_RESULTS)
+
+  useEffect(() => {
+    if (!open) setQuery('')
+  }, [open])
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -55,15 +58,15 @@ export function SearchBar({ posts }: SearchBarProps) {
         <CommandEmpty>검색 결과가 없습니다.</CommandEmpty>
         {results.length > 0 && (
           <CommandGroup heading="포스트">
-            {results.map(({ item }) => (
+            {results.map(post => (
               <CommandItem
-                key={item.slug}
-                value={item.slug}
-                onSelect={() => handleSelect(item.slug)}
+                key={post.slug}
+                value={post.slug}
+                onSelect={() => handleSelect(post.slug)}
               >
                 <div>
-                  <p className="font-medium">{item.title}</p>
-                  <p className="text-xs text-muted-foreground">{item.description}</p>
+                  <p className="font-medium">{post.title}</p>
+                  <p className="text-xs text-muted-foreground">{post.description}</p>
                 </div>
               </CommandItem>
             ))}

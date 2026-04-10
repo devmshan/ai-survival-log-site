@@ -1,14 +1,14 @@
-import Fuse from 'fuse.js'
 import type { PostMeta } from './types'
 
-export function createSearchIndex(posts: PostMeta[]) {
-  return new Fuse(posts, {
-    keys: [
-      { name: 'title', weight: 0.6 },
-      { name: 'description', weight: 0.3 },
-      { name: 'tags', weight: 0.1 },
-    ],
-    threshold: 0.4,
-    ignoreLocation: true,
+export function searchPosts(posts: PostMeta[], query: string): PostMeta[] {
+  const q = query.trim().toLowerCase()
+  if (!q) return []
+
+  return posts.filter(post => {
+    return (
+      post.title.toLowerCase().includes(q) ||
+      post.description.toLowerCase().includes(q) ||
+      post.tags.some(tag => tag.toLowerCase().includes(q))
+    )
   })
 }
