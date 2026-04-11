@@ -13,7 +13,7 @@ export function Header() {
 
   return (
     <header className="border-b">
-      <div className="container mx-auto px-4 max-w-4xl h-16 flex items-center justify-between">
+      <div className="container mx-auto px-4 max-w-4xl h-20 flex items-center justify-between">
         <Link href="/" aria-label="devsurvivallog 홈">
           <Logo />
         </Link>
