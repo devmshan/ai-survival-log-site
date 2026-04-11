@@ -30,7 +30,7 @@ function TerminalIcon({ x, y, size }: { x: number; y: number; size: number }) {
 export function Logo() {
   return (
     <svg
-      width="420"
+      className="w-[200px] md:w-[320px] lg:w-[420px]"
       height={BASELINE + 12}
       viewBox={`0 0 420 ${BASELINE + 12}`}
       fill="none"

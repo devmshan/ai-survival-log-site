@@ -1,15 +1,17 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
-import { Moon, Sun, Search } from 'lucide-react'
+import { Moon, Sun, Search, Menu, X } from 'lucide-react'
 import { useSearch } from '@/contexts/SearchContext'
 import { Logo } from './Logo'
 
 export function Header() {
   const { theme, setTheme } = useTheme()
   const { setOpen } = useSearch()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <header className="border-b">
@@ -17,7 +19,9 @@ export function Header() {
         <Link href="/" aria-label="devsurvivallog 홈">
           <Logo />
         </Link>
-        <nav className="flex items-center gap-4">
+
+        {/* 데스크탑 nav */}
+        <nav className="hidden md:flex items-center gap-4">
           <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground">
             About
           </Link>
@@ -39,7 +43,48 @@ export function Header() {
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
         </nav>
+
+        {/* 모바일 햄버거 버튼 */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          aria-label="메뉴"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
       </div>
+
+      {/* 모바일 드롭다운 메뉴 */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t">
+          <nav className="container mx-auto px-4 py-4 flex flex-col gap-4">
+            <Link
+              href="/about"
+              className="text-sm text-muted-foreground hover:text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              About
+            </Link>
+            <button
+              className="text-sm text-muted-foreground hover:text-foreground text-left flex items-center gap-2"
+              onClick={() => { setOpen(true); setMobileMenuOpen(false) }}
+            >
+              <Search className="h-4 w-4" /> 검색
+            </button>
+            <button
+              className="text-sm text-muted-foreground hover:text-foreground text-left flex items-center gap-2"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            >
+              {theme === 'dark'
+                ? <><Sun className="h-4 w-4" /> 라이트 모드</>
+                : <><Moon className="h-4 w-4" /> 다크 모드</>
+              }
+            </button>
+          </nav>
+        </div>
+      )}
     </header>
   )
 }
