@@ -11,7 +11,7 @@ export default function HomePage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">devsurvivallog</h1>
-        <p className="text-muted-foreground">개인 블로그 & AI 학습 기록</p>
+        <p className="text-muted-foreground">AI로 수렴하고, 나의 언어로 발산하는 공간</p>
       </div>
       <Suspense>
         <TagFilter tags={tags} />

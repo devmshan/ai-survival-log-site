@@ -16,7 +16,7 @@ export function TagFilter({ tags, selectedTag }: TagFilterProps) {
     if (tag === selectedTag) {
       router.push('/')
     } else {
-      router.push(`/tags/${tag}`)
+      router.push(`/tags/${encodeURIComponent(tag)}`)
     }
   }
 

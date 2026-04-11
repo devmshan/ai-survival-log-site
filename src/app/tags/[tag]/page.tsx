@@ -11,27 +11,29 @@ interface Props {
 
 export async function generateStaticParams() {
   const tags = getAllTags()
-  return tags.map(tag => ({ tag }))
+  return tags.map(tag => ({ tag: encodeURIComponent(tag) }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tag } = await params
-  return { title: `#${tag}` }
+  const decodedTag = decodeURIComponent(tag)
+  return { title: `#${decodedTag}` }
 }
 
 export default async function TagPage({ params }: Props) {
   const { tag } = await params
+  const decodedTag = decodeURIComponent(tag)
   const allTags = getAllTags()
 
-  if (!allTags.includes(tag)) notFound()
+  if (!allTags.includes(decodedTag)) notFound()
 
-  const posts = getPostsByTag(tag)
+  const posts = getPostsByTag(decodedTag)
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">#{tag}</h1>
+      <h1 className="text-2xl font-bold mb-6">#{decodedTag}</h1>
       <Suspense>
-        <TagFilter tags={allTags} selectedTag={tag} />
+        <TagFilter tags={allTags} selectedTag={decodedTag} />
       </Suspense>
       <PostList posts={posts} />
     </div>
