@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { Moon, Sun, Search } from 'lucide-react'
 import { useSearch } from '@/contexts/SearchContext'
+import { Logo } from './Logo'
 
 export function Header() {
   const { theme, setTheme } = useTheme()
@@ -13,8 +14,8 @@ export function Header() {
   return (
     <header className="border-b">
       <div className="container mx-auto px-4 max-w-4xl h-16 flex items-center justify-between">
-        <Link href="/" className="font-bold text-xl">
-          AI Survival Log
+        <Link href="/" aria-label="devsurvivallog 홈">
+          <Logo />
         </Link>
         <nav className="flex items-center gap-4">
           <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground">

@@ -13,8 +13,8 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'AI Survival Log',
-    template: '%s | AI Survival Log',
+    default: 'devsurvivallog',
+    template: '%s | devsurvivallog',
   },
   description: '개인 블로그 & AI 학습 기록',
 }

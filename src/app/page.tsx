@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">AI Survival Log</h1>
+        <h1 className="text-3xl font-bold mb-2">devsurvivallog</h1>
         <p className="text-muted-foreground">개인 블로그 & AI 학습 기록</p>
       </div>
       <Suspense>
