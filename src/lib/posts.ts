@@ -82,7 +82,12 @@ export function getAllSeries(): SeriesMeta[] {
   const seriesMap = new Map<string, { name: string; posts: PostMeta[] }>()
 
   for (const post of posts) {
-    if (!post.series || !post.seriesSlug) continue
+    if (!post.series) continue
+    if (!post.seriesSlug) {
+      throw new Error(
+        `[series] seriesSlug 누락: "${post.slug}" 포스트에 series는 있으나 seriesSlug가 없습니다. frontmatter에 seriesSlug를 추가하세요.`
+      )
+    }
 
     if (!seriesMap.has(post.seriesSlug)) {
       seriesMap.set(post.seriesSlug, { name: post.series, posts: [] })

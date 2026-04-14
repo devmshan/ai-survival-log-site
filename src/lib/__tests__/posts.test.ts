@@ -260,6 +260,25 @@ describe('getAllSeries', () => {
 
     warnSpy.mockRestore()
   })
+
+  it('series는 있고 seriesSlug가 없으면 에러를 던진다', async () => {
+    const fs = (await import('fs')).default
+    vi.mocked(fs.readdirSync).mockReturnValue([
+      'series-no-slug.mdx',
+    ] as unknown as ReturnType<typeof fs.readdirSync>)
+    vi.mocked(fs.readFileSync).mockReturnValue(`---
+title: 슬러그 없는 포스트
+date: 2026-04-10
+tags: []
+description: 설명
+draft: false
+series: "대규모 시스템 설계 스터디"
+seriesOrder: 1
+---
+# 본문
+`)
+    expect(() => getAllSeries()).toThrow('seriesSlug 누락')
+  })
 })
 
 describe('getSeriesBySlug', () => {
