@@ -9,16 +9,17 @@ interface SeriesPanelProps {
 
 export function SeriesPanel({ series, currentSlug }: SeriesPanelProps) {
   const currentIndex = series.posts.findIndex(p => p.slug === currentSlug)
+  const displayIndex = Math.max(0, currentIndex)
 
   return (
     <details className="border rounded-lg p-4 mb-8 bg-muted/30">
       <summary className="cursor-pointer flex items-center gap-2 font-medium list-none">
         <Badge variant="secondary">
-          {currentIndex + 1}/{series.posts.length}편
+          {displayIndex + 1}/{series.posts.length}편
         </Badge>
         <span>{series.name}</span>
       </summary>
-      <ol className="mt-4 space-y-2 pl-1">
+      <ol className="mt-4 space-y-2 pl-1 list-none">
         {series.posts.map((post, idx) => (
           <li key={post.slug} className="flex items-start gap-2 text-sm">
             <span className="text-muted-foreground w-4 shrink-0">{idx + 1}.</span>

@@ -42,4 +42,9 @@ describe('SeriesPanel', () => {
     expect(screen.getByText('2편. 데이터베이스 설계')).toBeInTheDocument()
     expect(screen.getByText('3편. 캐시 전략')).toBeInTheDocument()
   })
+
+  it('currentSlug가 시리즈에 없으면 1/n편으로 폴백 렌더링한다', () => {
+    render(<SeriesPanel series={mockSeries} currentSlug="not-in-series" />)
+    expect(screen.getByText('1/3편')).toBeInTheDocument()
+  })
 })
