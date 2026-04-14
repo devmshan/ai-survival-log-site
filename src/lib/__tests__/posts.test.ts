@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getAllPosts, getPostBySlug, getAllTags, getPostsByTag } from '../posts'
+import { getAllPosts, getPostBySlug, getAllTags, getPostsByTag, getAllSeries, getSeriesBySlug } from '../posts'
 
 // fs 모킹
 vi.mock('fs', () => ({
@@ -142,5 +142,109 @@ describe('getPostsByTag', () => {
   it('존재하지 않는 태그면 빈 배열을 반환한다', async () => {
     const posts = getPostsByTag('nonexistent')
     expect(posts).toEqual([])
+  })
+})
+
+const MOCK_SERIES_1 = `---
+title: 시리즈 1편
+date: 2026-04-10
+tags: [system-design]
+description: 1편 설명
+draft: false
+series: "대규모 시스템 설계 스터디"
+seriesSlug: "system-design-interview"
+seriesOrder: 1
+---
+# 1편 본문
+`
+
+const MOCK_SERIES_2 = `---
+title: 시리즈 2편
+date: 2026-04-11
+tags: [system-design]
+description: 2편 설명
+draft: false
+series: "대규모 시스템 설계 스터디"
+seriesSlug: "system-design-interview"
+seriesOrder: 2
+---
+# 2편 본문
+`
+
+const MOCK_SERIES_DRAFT = `---
+title: 시리즈 3편 (미완성)
+date: 2026-04-12
+tags: [system-design]
+description: 3편 설명
+draft: true
+series: "대규모 시스템 설계 스터디"
+seriesSlug: "system-design-interview"
+seriesOrder: 3
+---
+# 3편 본문
+`
+
+describe('getAllSeries', () => {
+  beforeEach(async () => {
+    const fs = (await import('fs')).default
+    vi.mocked(fs.readdirSync).mockReturnValue([
+      'series-01.mdx',
+      'series-02.mdx',
+      'series-draft.mdx',
+    ] as unknown as ReturnType<typeof fs.readdirSync>)
+    vi.mocked(fs.readFileSync).mockImplementation((filePath: unknown) => {
+      if (String(filePath).includes('series-01')) return MOCK_SERIES_1
+      if (String(filePath).includes('series-02')) return MOCK_SERIES_2
+      return MOCK_SERIES_DRAFT
+    })
+  })
+
+  it('draft 포스트를 제외하고 시리즈를 반환한다', () => {
+    const series = getAllSeries()
+    expect(series).toHaveLength(1)
+    expect(series[0].posts).toHaveLength(2)
+  })
+
+  it('seriesOrder 순으로 정렬된 posts를 반환한다', () => {
+    const series = getAllSeries()
+    expect(series[0].posts[0].title).toBe('시리즈 1편')
+    expect(series[0].posts[1].title).toBe('시리즈 2편')
+  })
+
+  it('SeriesPostEntry에는 slug, title, seriesOrder만 포함된다', () => {
+    const series = getAllSeries()
+    const entry = series[0].posts[0]
+    expect(entry).toEqual({ slug: 'series-01', title: '시리즈 1편', seriesOrder: 1 })
+  })
+
+  it('name과 slug를 올바르게 반환한다', () => {
+    const series = getAllSeries()
+    expect(series[0].name).toBe('대규모 시스템 설계 스터디')
+    expect(series[0].slug).toBe('system-design-interview')
+  })
+})
+
+describe('getSeriesBySlug', () => {
+  beforeEach(async () => {
+    const fs = (await import('fs')).default
+    vi.mocked(fs.readdirSync).mockReturnValue([
+      'series-01.mdx',
+      'series-02.mdx',
+    ] as unknown as ReturnType<typeof fs.readdirSync>)
+    vi.mocked(fs.readFileSync).mockImplementation((filePath: unknown) => {
+      if (String(filePath).includes('series-01')) return MOCK_SERIES_1
+      return MOCK_SERIES_2
+    })
+  })
+
+  it('slug에 해당하는 시리즈를 반환한다', () => {
+    const series = getSeriesBySlug('system-design-interview')
+    expect(series).toBeDefined()
+    expect(series!.name).toBe('대규모 시스템 설계 스터디')
+  })
+
+  it('존재하지 않는 slug면 undefined를 반환한다', () => {
+    const series = getSeriesBySlug('not-exist')
+    expect(series).toBeUndefined()
   })
 })
