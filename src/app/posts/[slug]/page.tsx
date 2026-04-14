@@ -2,14 +2,16 @@ import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
-import { getAllPosts, getPostBySlug } from '@/lib/posts'
+import { getAllPosts, getPostBySlug, getSeriesBySlug } from '@/lib/posts'
 import { mdxComponents } from '@/components/mdx/MDXComponents'
 import { TableOfContents } from '@/components/post/TableOfContents'
 import { PrevNextNav } from '@/components/post/PrevNextNav'
 import { GiscusComments } from '@/components/post/GiscusComments'
 import { ViewTracker } from '@/components/post/ViewTracker'
+import { SeriesPanel } from '@/components/post/SeriesPanel'
 import { Badge } from '@/components/ui/badge'
 import type { Metadata } from 'next'
+import type { PostMeta } from '@/lib/types'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -24,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const post = getPostBySlug(slug)
   return {
-    title: post.title,
+    title: post.series ? `${post.title} — ${post.series}` : post.title,
     description: post.description,
   }
 }
@@ -39,10 +41,30 @@ export default async function PostPage({ params }: Props) {
     notFound()
   }
 
-  const allPosts = getAllPosts()
-  const currentIndex = allPosts.findIndex(p => p.slug === slug)
-  const prev = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null
-  const next = currentIndex > 0 ? allPosts[currentIndex - 1] : null
+  const series = post.seriesSlug ? getSeriesBySlug(post.seriesSlug) : undefined
+
+  // prev/next: 시리즈 포스트면 시리즈 순서 기준, 일반 포스트면 날짜 순 전체 기준
+  let prev: PostMeta | null = null
+  let next: PostMeta | null = null
+
+  if (series) {
+    const idx = series.posts.findIndex(p => p.slug === slug)
+    const prevEntry = idx > 0 ? series.posts[idx - 1] : null
+    const nextEntry = idx < series.posts.length - 1 ? series.posts[idx + 1] : null
+
+    // SeriesPostEntry → PostMeta 최소 변환 (PrevNextNav에서 title, slug만 사용)
+    if (prevEntry) {
+      prev = { ...prevEntry, date: '', tags: [], description: '', draft: false, readingTime: '' }
+    }
+    if (nextEntry) {
+      next = { ...nextEntry, date: '', tags: [], description: '', draft: false, readingTime: '' }
+    }
+  } else {
+    const allPosts = getAllPosts()
+    const currentIndex = allPosts.findIndex(p => p.slug === slug)
+    prev = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null
+    next = currentIndex > 0 ? allPosts[currentIndex - 1] : null
+  }
 
   return (
     <article>
@@ -60,6 +82,8 @@ export default async function PostPage({ params }: Props) {
           <span>{post.readingTime}</span>
         </div>
       </header>
+
+      {series && <SeriesPanel series={series} currentSlug={slug} />}
 
       <div className="lg:grid lg:grid-cols-[1fr_200px] lg:gap-8">
         <div id="post-content" className="prose prose-neutral dark:prose-invert max-w-none">
