@@ -235,7 +235,8 @@ describe('getAllSeries', () => {
     expect(series[0].slug).toBe('system-design-interview')
   })
 
-  it('seriesOrder가 없는 포스트는 시리즈에서 제외된다', async () => {
+  it('seriesOrder가 없는 포스트는 시리즈에서 제외되고 warn이 출력된다', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const fs = (await import('fs')).default
     vi.mocked(fs.readdirSync).mockReturnValue([
       'series-01.mdx',
@@ -245,10 +246,19 @@ describe('getAllSeries', () => {
       if (String(filePath).includes('series-01')) return MOCK_SERIES_1
       return MOCK_SERIES_NO_ORDER
     })
+
     const series = getAllSeries()
-    expect(series).toHaveLength(1)
+
     expect(series[0].posts).toHaveLength(1)
     expect(series[0].posts[0].slug).toBe('series-01')
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('seriesOrder 누락 포스트 발견')
+    )
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('series-no-order')
+    )
+
+    warnSpy.mockRestore()
   })
 })
 
