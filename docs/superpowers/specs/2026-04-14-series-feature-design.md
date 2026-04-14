@@ -174,7 +174,7 @@ const next = idx < seriesPosts.length - 1 ? seriesPosts[idx + 1] : globalNext
 
 | 케이스 | 처리 방식 |
 |--------|-----------|
-| seriesOrder 없음 | date 기준 fallback 정렬 |
+| seriesOrder 없음 | 시리즈에서 제외 + console.warn (의도적 변경: fallback 정렬 대신 제외 — 시리즈 번호 불안정 방지, ecc:architect 리뷰 반영) |
 | seriesOrder 중복 | 경고 로그 + date 2차 정렬 |
 | seriesSlug 누락 (series는 있음) | 빌드 타임 에러 throw |
 | 시리즈 포스트가 1개뿐 | SeriesPanel은 표시하되 prev/next 시리즈 네비 숨김 |
