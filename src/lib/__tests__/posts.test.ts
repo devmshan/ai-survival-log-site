@@ -184,6 +184,18 @@ seriesOrder: 3
 # 3편 본문
 `
 
+const MOCK_SERIES_NO_ORDER = `---
+title: 시리즈 순서 없는 포스트
+date: 2026-04-15
+tags: [system-design]
+description: 순서 없음 설명
+draft: false
+series: "대규모 시스템 설계 스터디"
+seriesSlug: "system-design-interview"
+---
+# 순서 없는 본문
+`
+
 describe('getAllSeries', () => {
   beforeEach(async () => {
     const fs = (await import('fs')).default
@@ -221,6 +233,22 @@ describe('getAllSeries', () => {
     const series = getAllSeries()
     expect(series[0].name).toBe('대규모 시스템 설계 스터디')
     expect(series[0].slug).toBe('system-design-interview')
+  })
+
+  it('seriesOrder가 없는 포스트는 시리즈에서 제외된다', async () => {
+    const fs = (await import('fs')).default
+    vi.mocked(fs.readdirSync).mockReturnValue([
+      'series-01.mdx',
+      'series-no-order.mdx',
+    ] as unknown as ReturnType<typeof fs.readdirSync>)
+    vi.mocked(fs.readFileSync).mockImplementation((filePath: unknown) => {
+      if (String(filePath).includes('series-01')) return MOCK_SERIES_1
+      return MOCK_SERIES_NO_ORDER
+    })
+    const series = getAllSeries()
+    expect(series).toHaveLength(1)
+    expect(series[0].posts).toHaveLength(1)
+    expect(series[0].posts[0].slug).toBe('series-01')
   })
 })
 
