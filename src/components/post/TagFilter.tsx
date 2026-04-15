@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 
 interface TagFilterProps {
   tags: string[]

@@ -28,27 +28,30 @@ export function SearchBar({ posts }: SearchBarProps) {
   const results = searchPosts(posts, query).slice(0, MAX_RESULTS)
 
   useEffect(() => {
-    if (!open) setQuery('')
-  }, [open])
-
-  useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setOpen(prev => !prev)
+        const nextOpen = !open
+        if (!nextOpen) setQuery('')
+        setOpen(nextOpen)
       }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [setOpen])
+  }, [open, setOpen])
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) setQuery('')
+    setOpen(nextOpen)
+  }
 
   function handleSelect(slug: string) {
-    setOpen(false)
+    handleOpenChange(false)
     router.push(`/posts/${slug}`)
   }
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
+    <CommandDialog open={open} onOpenChange={handleOpenChange} shouldFilter={false}>
       <CommandInput
         placeholder="글 검색..."
         value={query}

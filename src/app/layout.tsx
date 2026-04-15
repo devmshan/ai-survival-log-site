@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import { Analytics } from '@vercel/analytics/next'
 import { Header } from '@/components/layout/Header'
@@ -8,8 +7,6 @@ import { getAllPosts } from '@/lib/posts'
 import { SearchBar } from '@/components/search/SearchBar'
 import { SearchProvider } from '@/contexts/SearchContext'
 import './globals.css'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
@@ -24,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <SearchProvider>
             <div className="min-h-screen flex flex-col">

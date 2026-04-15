@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 interface Heading {
   id: string
   text: string
@@ -9,21 +7,15 @@ interface Heading {
 }
 
 export function TableOfContents() {
-  const [headings, setHeadings] = useState<Heading[]>([])
-
-  useEffect(() => {
-    const content = document.getElementById('post-content')
-    if (!content) return
-    const elements = content.querySelectorAll('h2, h3')
-    const items: Heading[] = Array.from(elements)
-      .filter(el => !el.closest('.sr-only') && el.id)
-      .map(el => ({
-        id: el.id,
-        text: el.textContent ?? '',
-        level: parseInt(el.tagName[1]),
-      }))
-    setHeadings(items)
-  }, [])
+  const headings: Heading[] = typeof document === 'undefined'
+    ? []
+    : Array.from(document.getElementById('post-content')?.querySelectorAll('h2, h3') ?? [])
+        .filter(el => !el.closest('.sr-only') && el.id)
+        .map(el => ({
+          id: el.id,
+          text: el.textContent ?? '',
+          level: parseInt(el.tagName[1]),
+        }))
 
   if (headings.length === 0) return null
 

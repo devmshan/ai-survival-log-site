@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,9 +15,11 @@ export function PostCard({ post }: PostCardProps) {
       <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
         {post.thumbnail && (
           <div className="aspect-video overflow-hidden rounded-t-lg">
-            <img
+            <Image
               src={post.thumbnail}
               alt={post.title}
+              width={1200}
+              height={675}
               className="w-full h-full object-cover"
             />
           </div>

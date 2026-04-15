@@ -1,0 +1,10 @@
+model_reasoning = "medium"
+
+[project]
+name = "ai-survival-log-site"
+role = "site-consumer"
+
+[principles]
+plan_before_execute = true
+verify_before_completion = true
+selective_adoption = true

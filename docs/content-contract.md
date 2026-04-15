@@ -1,0 +1,48 @@
+# Content Contract
+
+## Role
+
+`content/posts` is the publishing interface consumed by this site.
+
+The site may host manually written posts, but the default rule is that posts should remain compatible with the upstream `ai-survival-log` publishing pipeline.
+
+## Minimum Frontmatter
+
+- `title: string`
+- `date: string`
+- `tags: string[]`
+- `description: string`
+- `draft: boolean`
+
+## Optional Fields
+
+- `thumbnail?: string`
+- `series?: string`
+- `seriesSlug?: string`
+- `seriesOrder?: number`
+
+## Series Rules
+
+- `seriesSlug` is the series identifier used by the runtime
+- if `series` exists, `seriesSlug` is required
+- posts without `seriesOrder` are excluded from public series navigation and produce a warning
+- draft posts are excluded from public post listings and public series navigation
+- duplicate `seriesOrder` values produce a warning and then use `date` as a secondary sort key
+
+These rules must stay aligned with:
+
+- [src/lib/posts.ts](/Users/ms/workspace/claude/ai-survival-log-site/src/lib/posts.ts)
+- [src/lib/__tests__/posts.test.ts](/Users/ms/workspace/claude/ai-survival-log-site/src/lib/__tests__/posts.test.ts)
+
+## Compatibility Rule
+
+Manual authoring is allowed, but published posts should remain compatible with the upstream wiki publishing pipeline.
+
+## Verification
+
+When changing content contract rules:
+
+- update this document if runtime behavior changes
+- verify the rules still match `src/lib/posts.ts`
+- verify the tests still describe the same behavior
+- run the content contract verification script against the current posts set

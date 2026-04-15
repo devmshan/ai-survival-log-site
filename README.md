@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ai-survival-log-site
 
-## Getting Started
+`ai-survival-log-site` is the presentation and downstream publishing-consumer layer for content originating from the `ai-survival-log` workflow.
 
-First, run the development server:
+Core flow:
+`wiki -> publish -> site/content/posts`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Role
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This repository focuses on:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- rendering published posts
+- supporting blog posts, study-series posts, and downstream Instagram expansion
+- keeping `content/posts` compatible with the upstream publishing model
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This repository is not the primary wiki authoring source of truth.
 
-## Learn More
+## Relationship To ai-survival-log
 
-To learn more about Next.js, take a look at the following resources:
+- `ai-survival-log` remains the upstream wiki and authoring system
+- this repository consumes publish-ready outputs
+- manual writing is allowed here, but content should stay compatible with the publishing contract
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Content Contract
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Posts live in `content/posts/*.mdx` and `content/posts/*.md`.
 
-## Deploy on Vercel
+Minimum frontmatter:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `title`
+- `date`
+- `tags`
+- `description`
+- `draft`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Optional fields:
+
+- `thumbnail`
+- `series`
+- `seriesSlug`
+- `seriesOrder`
+
+See [docs/content-contract.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/content-contract.md) for the full contract.
+
+## Series Rules
+
+- `seriesSlug` is the series identifier used by the runtime
+- if `series` exists, `seriesSlug` is required
+- posts without `seriesOrder` are excluded from public series navigation
+- draft posts are excluded from public post listings and public series navigation
+- duplicate `seriesOrder` values may warn and then fall back to date as a secondary sort key
+
+## Working Principles
+
+- plan before structural changes
+- implement the minimum necessary change
+- verify before completion
+- selectively adopt ECC and superpowers principles only
+- keep documents and runtime contracts aligned
+
+## Local Surfaces
+
+- `.claude/`: Claude local surface and lightweight hooks
+- `.codex/`: Codex local operating surface
+- `AGENTS.md`: repository-wide operating guide
+- `CLAUDE.md`: Claude-specific local notes
