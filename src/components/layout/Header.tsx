@@ -15,7 +15,7 @@ export function Header() {
 
   return (
     <header className="border-b">
-      <div className="container mx-auto px-4 max-w-4xl h-14 flex items-center justify-between">
+      <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <Link href="/" aria-label="devsurvivallog 홈">
           <Logo />
         </Link>
@@ -59,7 +59,7 @@ export function Header() {
       {/* 모바일 드롭다운 메뉴 */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t">
-          <nav className="container mx-auto px-4 py-4 flex flex-col gap-4">
+          <nav className="container mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4">
             <Link
               href="/about"
               className="text-sm text-muted-foreground hover:text-foreground"

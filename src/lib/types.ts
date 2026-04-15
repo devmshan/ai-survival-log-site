@@ -14,6 +14,7 @@ export interface PostMeta {
 
 export interface Post extends PostMeta {
   content: string
+  headings: PostHeading[]
 }
 
 export interface SeriesPostEntry {
@@ -26,4 +27,10 @@ export interface SeriesMeta {
   name: string
   slug: string
   posts: SeriesPostEntry[]
+}
+
+export interface PostHeading {
+  id: string
+  text: string
+  level: 2 | 3
 }

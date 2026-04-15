@@ -2,9 +2,56 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import readingTime from 'reading-time'
-import type { Post, PostMeta, SeriesMeta, SeriesPostEntry } from './types'
+import type { Post, PostHeading, PostMeta, SeriesMeta, SeriesPostEntry } from './types'
 
 const POSTS_DIR = path.join(process.cwd(), 'content/posts')
+
+function createHeadingId(text: string, seen: Map<string, number>): string {
+  const base = text
+    .toLowerCase()
+    .trim()
+    .replace(/[`*_~[\]()<>{}#!.,:;/?\\|'"=+]+/g, '')
+    .replace(/\s+/g, '-')
+
+  const normalized = base || 'section'
+  const count = seen.get(normalized) ?? 0
+  seen.set(normalized, count + 1)
+  return count === 0 ? normalized : `${normalized}-${count}`
+}
+
+export function extractHeadings(content: string): PostHeading[] {
+  const headings: PostHeading[] = []
+  const seenIds = new Map<string, number>()
+  let inCodeBlock = false
+
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim()
+
+    if (trimmed.startsWith('```')) {
+      inCodeBlock = !inCodeBlock
+      continue
+    }
+
+    if (inCodeBlock) continue
+
+    const match = /^(##|###)\s+(.+)$/.exec(trimmed)
+    if (!match) continue
+
+    const level = match[1].length as 2 | 3
+    const text = match[2]
+      .trim()
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/[`*_~]+/g, '')
+
+    headings.push({
+      id: createHeadingId(text, seenIds),
+      text,
+      level,
+    })
+  }
+
+  return headings
+}
 
 export function getAllPosts(): PostMeta[] {
   const files = fs.readdirSync(POSTS_DIR).filter(f => f.endsWith('.mdx') || f.endsWith('.md'))
@@ -61,6 +108,7 @@ export function getPostBySlug(slug: string): Post {
     draft: data.draft ?? false,
     readingTime: readingTime(content).text,
     content,
+    headings: extractHeadings(content),
     series: data.series,
     seriesSlug: data.seriesSlug,
     seriesOrder: data.seriesOrder,

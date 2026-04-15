@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getAllPosts, getPostBySlug, getAllTags, getPostsByTag, getAllSeries, getSeriesBySlug } from '../posts'
+import { extractHeadings, getAllPosts, getPostBySlug, getAllTags, getPostsByTag, getAllSeries, getSeriesBySlug } from '../posts'
 
 // fs 모킹
 vi.mock('fs', () => ({
@@ -20,6 +20,10 @@ draft: false
 # Hello World
 
 Some content here.
+
+## Section One
+
+### Nested Point
 `
 
 const MOCK_MDX_2 = `---
@@ -97,12 +101,49 @@ describe('getPostBySlug', () => {
     const post = getPostBySlug('first-post')
     expect(post.title).toBe('First Post')
     expect(post.content).toBeTruthy()
+    expect(post.headings).toEqual([
+      { id: 'section-one', text: 'Section One', level: 2 },
+      { id: 'nested-point', text: 'Nested Point', level: 3 },
+    ])
   })
 
   it('존재하지 않는 slug면 에러를 던진다', async () => {
     const fs = (await import('fs')).default
     vi.mocked(fs.existsSync).mockReturnValue(false)
     expect(() => getPostBySlug('not-exist')).toThrow('Post not found: not-exist')
+  })
+})
+
+describe('extractHeadings', () => {
+  it('h2, h3만 추출하고 코드 블록 내부 헤딩은 무시한다', () => {
+    const headings = extractHeadings(`
+# Title
+
+## First Topic
+
+\`\`\`md
+## Hidden Topic
+\`\`\`
+
+### Follow Up
+`)
+
+    expect(headings).toEqual([
+      { id: 'first-topic', text: 'First Topic', level: 2 },
+      { id: 'follow-up', text: 'Follow Up', level: 3 },
+    ])
+  })
+
+  it('중복 헤딩에는 고유 id를 부여한다', () => {
+    const headings = extractHeadings(`
+## Repeat
+## Repeat
+`)
+
+    expect(headings).toEqual([
+      { id: 'repeat', text: 'Repeat', level: 2 },
+      { id: 'repeat-1', text: 'Repeat', level: 2 },
+    ])
   })
 })
 

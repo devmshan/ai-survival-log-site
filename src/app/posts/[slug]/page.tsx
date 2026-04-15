@@ -67,39 +67,49 @@ export default async function PostPage({ params }: Props) {
   }
 
   return (
-    <article>
+    <article className="mx-auto max-w-6xl">
       <ViewTracker slug={slug} />
-      <header className="mb-8">
-        <div className="flex flex-wrap gap-2 mb-3">
-          {post.tags.map(tag => (
-            <Badge key={tag} variant="secondary">{tag}</Badge>
-          ))}
-        </div>
-        <h1 className="text-3xl font-bold mb-3">{post.title}</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>{post.date}</span>
-          <span>·</span>
-          <span>{post.readingTime}</span>
-        </div>
-      </header>
+      <div className="mx-auto max-w-3xl">
+        <header className="mb-8">
+          <div className="mb-3 flex flex-wrap gap-2">
+            {post.tags.map(tag => (
+              <Badge key={tag} variant="secondary">{tag}</Badge>
+            ))}
+          </div>
+          <h1 className="mb-3 text-3xl font-bold tracking-tight md:text-4xl">{post.title}</h1>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>{post.date}</span>
+            <span>·</span>
+            <span>{post.readingTime}</span>
+          </div>
+        </header>
 
-      {series && <SeriesPanel series={series} currentSlug={slug} />}
+        {series && <SeriesPanel series={series} currentSlug={slug} />}
 
-      <div className="lg:grid lg:grid-cols-[1fr_200px] lg:gap-8">
-        <div id="post-content" className="prose prose-neutral dark:prose-invert max-w-none">
+        <div className="mb-8 lg:hidden">
+          <TableOfContents headings={post.headings} />
+        </div>
+      </div>
+
+      <div className="xl:grid xl:grid-cols-[minmax(0,46rem)_16rem] xl:gap-12">
+        <div id="post-content" className="prose prose-neutral mx-auto max-w-3xl dark:prose-invert xl:mx-0">
           <MDXRemote
             source={post.content}
             components={mdxComponents}
             options={{ mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeSlug] } }}
           />
         </div>
-        <aside className="hidden lg:block sticky top-8 h-fit">
-          <TableOfContents />
+        <aside className="hidden xl:block">
+          <div className="sticky top-24">
+            <TableOfContents headings={post.headings} />
+          </div>
         </aside>
       </div>
 
-      <PrevNextNav prev={prev} next={next} />
-      <GiscusComments />
+      <div className="mx-auto max-w-3xl">
+        <PrevNextNav prev={prev} next={next} />
+        <GiscusComments />
+      </div>
     </article>
   )
 }
