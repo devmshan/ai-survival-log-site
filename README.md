@@ -41,6 +41,7 @@ Optional fields:
 - `seriesOrder`
 
 See [docs/content-contract.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/content-contract.md) for the full contract.
+See [docs/2026-04-15-final-consistency-review.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/2026-04-15-final-consistency-review.md) for the final cross-repository consistency review.
 
 ## Series Rules
 
