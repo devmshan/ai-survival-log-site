@@ -29,6 +29,8 @@ However, the default rule is that posts should remain compatible with the wiki-b
 
 Preserve compatibility with content/posts publishing contracts.
 Keep runtime behavior and contract documents aligned.
+When writing or rewriting posts, follow [docs/content-seo-guide.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/content-seo-guide.md) so new content also reflects search priorities.
+If equivalent authoring guidance exists upstream in `ai-survival-log`, keep the two repositories aligned instead of letting SEO writing rules drift.
 
 ## Selective Adoption
 

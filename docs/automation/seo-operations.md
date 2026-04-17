@@ -11,8 +11,13 @@
 - 운영 중 추적할 핵심 지표
 - 콘텐츠 작성 시 적용할 최소 SEO 원칙
 
+새 글 작성과 기존 글 리라이트의 상세 기준은
+[docs/content-seo-guide.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/content-seo-guide.md)
+를 따른다.
+
 이 문서의 직접 대상은 site repo다.
 다만 `content/posts` frontmatter나 publish output shape와 관련된 변경은 upstream `ai-survival-log` publish contract와 호환되어야 한다.
+또한 콘텐츠 SEO 작성 원칙은 downstream 보정 규칙으로만 남기지 말고, 가능하면 upstream `ai-survival-log`의 글 작성 흐름에도 동일하게 반영해야 한다.
 
 ---
 
