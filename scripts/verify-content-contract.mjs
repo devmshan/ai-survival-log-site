@@ -62,6 +62,15 @@ function validateFile(filePath) {
   if ('description' in data && typeof data.description !== 'string') {
     errors.push(`${relativePath}: "description" must be a string`)
   }
+  if ('seoTitle' in data && typeof data.seoTitle !== 'string') {
+    errors.push(`${relativePath}: "seoTitle" must be a string when present`)
+  }
+  if ('seoDescription' in data && typeof data.seoDescription !== 'string') {
+    errors.push(`${relativePath}: "seoDescription" must be a string when present`)
+  }
+  if ('thumbnail' in data && typeof data.thumbnail !== 'string') {
+    errors.push(`${relativePath}: "thumbnail" must be a string when present`)
+  }
   if ('draft' in data && typeof data.draft !== 'boolean') {
     errors.push(`${relativePath}: "draft" must be a boolean`)
   }

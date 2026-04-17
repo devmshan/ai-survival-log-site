@@ -19,6 +19,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: series.name,
     description: `${series.name} 시리즈 — 총 ${series.posts.length}편`,
+    alternates: {
+      canonical: `/series/${series.slug}`,
+    },
   }
 }
 

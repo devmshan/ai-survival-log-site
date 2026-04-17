@@ -25,7 +25,14 @@ function safeDecodeTag(raw: string): string | null {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tag } = await params
   const decodedTag = safeDecodeTag(tag) ?? tag
-  return { title: `#${decodedTag}` }
+  const encodedTag = encodeURIComponent(decodedTag)
+  return {
+    title: `#${decodedTag}`,
+    description: `${decodedTag} 태그로 분류된 글 목록`,
+    alternates: {
+      canonical: `/tags/${encodedTag}`,
+    },
+  }
 }
 
 export default async function TagPage({ params }: Props) {

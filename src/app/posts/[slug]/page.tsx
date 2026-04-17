@@ -2,16 +2,19 @@ import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
-import { getAllPosts, getPostBySlug, getSeriesBySlug } from '@/lib/posts'
+import { getAllPosts, getPostBySlug, getRelatedPosts, getSeriesBySlug } from '@/lib/posts'
 import { mdxComponents } from '@/components/mdx/MDXComponents'
 import { TableOfContents } from '@/components/post/TableOfContents'
 import { PrevNextNav } from '@/components/post/PrevNextNav'
 import { GiscusComments } from '@/components/post/GiscusComments'
 import { ViewTracker } from '@/components/post/ViewTracker'
 import { SeriesPanel } from '@/components/post/SeriesPanel'
+import { RelatedPosts } from '@/components/post/RelatedPosts'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import type { PostMeta } from '@/lib/types'
+import { absoluteUrl, getDefaultOgImage, resolveSiteAssetUrl } from '@/lib/site'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -24,10 +27,44 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const post = getPostBySlug(slug)
+  let post
+  try {
+    post = getPostBySlug(slug)
+  } catch {
+    notFound()
+  }
+
+  const canonicalPath = `/posts/${post.slug}`
+  const ogImage = resolveSiteAssetUrl(post.thumbnail)
+  const title = post.seoTitle ?? (post.series ? `${post.title} — ${post.series}` : post.title)
+  const description = post.seoDescription ?? post.description
+
   return {
-    title: post.series ? `${post.title} — ${post.series}` : post.title,
-    description: post.description,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      type: 'article',
+      url: canonicalPath,
+      title,
+      description,
+      publishedTime: post.date,
+      tags: post.tags,
+      images: [
+        {
+          url: ogImage,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+    },
   }
 }
 
@@ -42,6 +79,7 @@ export default async function PostPage({ params }: Props) {
   }
 
   const series = post.seriesSlug ? getSeriesBySlug(post.seriesSlug) : undefined
+  const relatedPosts = getRelatedPosts(slug)
 
   // prev/next: 시리즈 포스트면 시리즈 순서 기준, 일반 포스트면 날짜 순 전체 기준
   let prev: PostMeta | null = null
@@ -66,14 +104,47 @@ export default async function PostPage({ params }: Props) {
     next = currentIndex > 0 ? allPosts[currentIndex - 1] : null
   }
 
+  const postUrl = absoluteUrl(`/posts/${post.slug}`)
+  const ogImage = resolveSiteAssetUrl(post.thumbnail)
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.seoTitle ?? post.title,
+    description: post.seoDescription ?? post.description,
+    datePublished: post.date,
+    dateModified: post.date,
+    mainEntityOfPage: postUrl,
+    url: postUrl,
+    image: [ogImage || getDefaultOgImage()],
+    keywords: post.tags,
+    articleSection: post.series ?? undefined,
+    author: {
+      '@type': 'Person',
+      name: 'devsurvivallog',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'devsurvivallog',
+      url: absoluteUrl('/'),
+    },
+  }
+
   return (
     <article className="mx-auto max-w-6xl">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ViewTracker slug={slug} />
       <div className="mx-auto max-w-3xl">
         <header className="mb-8">
           <div className="mb-3 flex flex-wrap gap-2">
             {post.tags.map(tag => (
-              <Badge key={tag} variant="secondary">{tag}</Badge>
+              <Link key={tag} href={`/tags/${encodeURIComponent(tag)}`}>
+                <Badge variant="secondary" className="hover:bg-secondary/80">
+                  {tag}
+                </Badge>
+              </Link>
             ))}
           </div>
           <h1 className="mb-3 text-3xl font-bold tracking-tight md:text-4xl">{post.title}</h1>
@@ -107,6 +178,7 @@ export default async function PostPage({ params }: Props) {
       </div>
 
       <div className="mx-auto max-w-3xl">
+        <RelatedPosts posts={relatedPosts} />
         <PrevNextNav prev={prev} next={next} />
         <GiscusComments />
       </div>

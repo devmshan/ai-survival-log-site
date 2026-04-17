@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { extractHeadings, getAllPosts, getPostBySlug, getAllTags, getPostsByTag, getAllSeries, getSeriesBySlug } from '../posts'
+import { extractHeadings, getAllPosts, getPostBySlug, getAllTags, getPostsByTag, getAllSeries, getSeriesBySlug, getRelatedPosts } from '../posts'
 
 // fs 모킹
 vi.mock('fs', () => ({
@@ -12,9 +12,12 @@ vi.mock('fs', () => ({
 
 const MOCK_MDX_1 = `---
 title: First Post
+seoTitle: First Post for Search
 date: 2026-04-01
 tags: [AI, react]
 description: First description
+seoDescription: First description for search
+thumbnail: /images/yacht-sailing.jpg
 draft: false
 ---
 # Hello World
@@ -79,6 +82,14 @@ describe('getAllPosts', () => {
     expect(posts[0].readingTime).toBeTruthy()
   })
 
+  it('optional SEO 필드를 파싱한다', async () => {
+    const posts = getAllPosts()
+    const firstPost = posts.find(post => post.slug === 'first-post')
+    expect(firstPost?.seoTitle).toBe('First Post for Search')
+    expect(firstPost?.seoDescription).toBe('First description for search')
+    expect(firstPost?.thumbnail).toBe('/images/yacht-sailing.jpg')
+  })
+
   it('.md 확장자도 처리한다', async () => {
     const fs = (await import('fs')).default
     vi.mocked(fs.readdirSync).mockReturnValue(['md-post.md'] as unknown as ReturnType<typeof fs.readdirSync>)
@@ -100,6 +111,8 @@ describe('getPostBySlug', () => {
   it('slug에 해당하는 포스트를 반환한다', async () => {
     const post = getPostBySlug('first-post')
     expect(post.title).toBe('First Post')
+    expect(post.seoTitle).toBe('First Post for Search')
+    expect(post.seoDescription).toBe('First description for search')
     expect(post.content).toBeTruthy()
     expect(post.headings).toEqual([
       { id: 'section-one', text: 'Section One', level: 2 },
@@ -237,6 +250,62 @@ seriesSlug: "system-design-interview"
 # 순서 없는 본문
 `
 
+const MOCK_RELATED_BASE = `---
+title: 현재 글
+date: 2026-04-10
+tags: [AI, rag]
+description: 현재 글 설명
+draft: false
+series: "AI 구조"
+seriesSlug: "ai-architecture"
+seriesOrder: 1
+---
+# 현재 글
+`
+
+const MOCK_RELATED_SERIES = `---
+title: 같은 시리즈 글
+date: 2026-04-11
+tags: [llm]
+description: 같은 시리즈 글 설명
+draft: false
+series: "AI 구조"
+seriesSlug: "ai-architecture"
+seriesOrder: 2
+---
+# 같은 시리즈 글
+`
+
+const MOCK_RELATED_TAG_HEAVY = `---
+title: 태그 겹침 많은 글
+date: 2026-04-12
+tags: [AI, rag, vector-db]
+description: 태그 겹침 글 설명
+draft: false
+---
+# 태그 겹침 많은 글
+`
+
+const MOCK_RELATED_TAG_LIGHT = `---
+title: 태그 하나 겹치는 글
+date: 2026-04-09
+tags: [AI, productivity]
+description: 태그 하나 겹침 글 설명
+draft: false
+---
+# 태그 하나 겹치는 글
+`
+
+const MOCK_UNRELATED = `---
+title: 무관한 글
+date: 2026-04-13
+tags: [career]
+description: 무관한 글 설명
+draft: false
+---
+# 무관한 글
+`
+
 describe('getAllSeries', () => {
   beforeEach(async () => {
     const fs = (await import('fs')).default
@@ -344,5 +413,40 @@ describe('getSeriesBySlug', () => {
   it('존재하지 않는 slug면 undefined를 반환한다', () => {
     const series = getSeriesBySlug('not-exist')
     expect(series).toBeUndefined()
+  })
+})
+
+describe('getRelatedPosts', () => {
+  beforeEach(async () => {
+    const fs = (await import('fs')).default
+    vi.mocked(fs.readdirSync).mockReturnValue([
+      'current-post.mdx',
+      'same-series.mdx',
+      'tag-heavy.mdx',
+      'tag-light.mdx',
+      'unrelated.mdx',
+    ] as unknown as ReturnType<typeof fs.readdirSync>)
+    vi.mocked(fs.readFileSync).mockImplementation((filePath: unknown) => {
+      if (String(filePath).includes('current-post')) return MOCK_RELATED_BASE
+      if (String(filePath).includes('same-series')) return MOCK_RELATED_SERIES
+      if (String(filePath).includes('tag-heavy')) return MOCK_RELATED_TAG_HEAVY
+      if (String(filePath).includes('tag-light')) return MOCK_RELATED_TAG_LIGHT
+      return MOCK_UNRELATED
+    })
+  })
+
+  it('현재 글을 제외하고 관련도 순으로 반환한다', () => {
+    const related = getRelatedPosts('current-post')
+    expect(related.map(post => post.slug)).toEqual(['same-series', 'tag-heavy', 'tag-light'])
+  })
+
+  it('관련도가 없는 글은 제외한다', () => {
+    const related = getRelatedPosts('current-post')
+    expect(related.some(post => post.slug === 'unrelated')).toBe(false)
+  })
+
+  it('limit 인자를 적용한다', () => {
+    const related = getRelatedPosts('current-post', 2)
+    expect(related).toHaveLength(2)
   })
 })

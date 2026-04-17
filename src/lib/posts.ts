@@ -66,9 +66,11 @@ export function getAllPosts(): PostMeta[] {
       return {
         slug,
         title: data.title ?? slug,
+        seoTitle: data.seoTitle,
         date: data.date ?? '',
         tags: data.tags ?? [],
         description: data.description ?? '',
+        seoDescription: data.seoDescription,
         thumbnail: data.thumbnail,
         draft: data.draft ?? false,
         readingTime: readingTime(content).text,
@@ -101,9 +103,11 @@ export function getPostBySlug(slug: string): Post {
   return {
     slug,
     title: data.title ?? slug,
+    seoTitle: data.seoTitle,
     date: data.date ?? '',
     tags: data.tags ?? [],
     description: data.description ?? '',
+    seoDescription: data.seoDescription,
     thumbnail: data.thumbnail,
     draft: data.draft ?? false,
     readingTime: readingTime(content).text,
@@ -123,6 +127,28 @@ export function getAllTags(): string[] {
 
 export function getPostsByTag(tag: string): PostMeta[] {
   return getAllPosts().filter(p => p.tags.includes(tag))
+}
+
+export function getRelatedPosts(currentSlug: string, limit = 3): PostMeta[] {
+  const posts = getAllPosts()
+  const currentPost = posts.find(post => post.slug === currentSlug)
+  if (!currentPost) return []
+
+  return posts
+    .filter(post => post.slug !== currentSlug)
+    .map(post => {
+      const sharedTags = post.tags.filter(tag => currentPost.tags.includes(tag)).length
+      const sameSeries = currentPost.seriesSlug && post.seriesSlug === currentPost.seriesSlug ? 1 : 0
+      const score = sameSeries * 100 + sharedTags * 10
+      return { post, score }
+    })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => {
+      if (a.score !== b.score) return b.score - a.score
+      return new Date(b.post.date).getTime() - new Date(a.post.date).getTime()
+    })
+    .slice(0, limit)
+    .map(({ post }) => post)
 }
 
 export function getAllSeries(): SeriesMeta[] {

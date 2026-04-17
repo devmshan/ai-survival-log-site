@@ -5,6 +5,9 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: '시리즈',
   description: '주제별로 묶은 연재 글 목록',
+  alternates: {
+    canonical: '/series',
+  },
 }
 
 export default function SeriesIndexPage() {
