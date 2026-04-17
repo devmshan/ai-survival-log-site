@@ -17,9 +17,19 @@ The site may host manually written posts, but the default rule is that posts sho
 ## Optional Fields
 
 - `thumbnail?: string`
+- `seoTitle?: string`
+- `seoDescription?: string`
 - `series?: string`
 - `seriesSlug?: string`
 - `seriesOrder?: number`
+
+## SEO Field Rules
+
+- `thumbnail` is the representative image field currently reused by both post cards and social preview metadata
+- if `seoTitle` is absent, runtime falls back to `title`
+- if `seoDescription` is absent, runtime falls back to `description`
+- SEO fields are optional so upstream `ai-survival-log` publish outputs remain compatible even before those fields are emitted
+- site runtime must continue to work when upstream omits all SEO-specific fields
 
 ## Series Rules
 
@@ -46,3 +56,4 @@ When changing content contract rules:
 - verify the rules still match `src/lib/posts.ts`
 - verify the tests still describe the same behavior
 - run the content contract verification script against the current posts set
+- re-check that upstream publish outputs remain compatible when optional SEO fields are absent

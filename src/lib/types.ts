@@ -1,8 +1,10 @@
 export interface PostMeta {
   title: string
+  seoTitle?: string
   date: string
   tags: string[]
   description: string
+  seoDescription?: string
   thumbnail?: string
   draft: boolean
   slug: string

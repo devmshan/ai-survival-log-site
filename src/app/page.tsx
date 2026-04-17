@@ -2,6 +2,14 @@ import { getAllPosts, getAllTags } from '@/lib/posts'
 import { PostList } from '@/components/post/PostList'
 import { TagFilter } from '@/components/post/TagFilter'
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  description: 'AI로 수렴하고, 나의 언어로 발산하는 개발자 학습 로그',
+  alternates: {
+    canonical: '/',
+  },
+}
 
 export default function HomePage() {
   const posts = getAllPosts()

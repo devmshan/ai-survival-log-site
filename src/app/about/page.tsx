@@ -1,6 +1,12 @@
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'About' }
+export const metadata: Metadata = {
+  title: 'About',
+  description: 'devsurvivallog 소개와 운영 철학',
+  alternates: {
+    canonical: '/about',
+  },
+}
 
 const philosophies = [
   {

@@ -89,8 +89,12 @@ RESEND_SEGMENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 | `NEXT_PUBLIC_GISCUS_CATEGORY_ID` | giscus.app에서 확인한 값 |
 | `RESEND_API_KEY` | `re_xxxxx` |
 | `RESEND_SEGMENT_ID` | Resend Segment UUID |
+| `NEXT_PUBLIC_SITE_URL` | `https://your-domain.example` |
 
 > 환경변수 추가 후 **Deployments → Redeploy** 해야 반영됩니다.
+
+`NEXT_PUBLIC_SITE_URL`은 canonical, sitemap, OG metadata의 기준 URL로 사용됩니다.
+커스텀 도메인이 있다면 그 값을 넣고, 없다면 기본 Vercel 도메인을 넣습니다.
 
 ### 3단계 — 이후 자동 배포
 
