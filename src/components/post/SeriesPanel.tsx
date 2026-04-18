@@ -12,7 +12,7 @@ export function SeriesPanel({ series, currentSlug }: SeriesPanelProps) {
   const displayIndex = Math.max(0, currentIndex)
 
   return (
-    <details className="border rounded-lg p-4 mb-8 bg-muted/30">
+    <details open className="border rounded-lg p-4 mb-6 bg-muted/30">
       <summary className="cursor-pointer flex items-center gap-2 font-medium list-none">
         <Badge variant="secondary">
           {displayIndex + 1}/{series.posts.length}편

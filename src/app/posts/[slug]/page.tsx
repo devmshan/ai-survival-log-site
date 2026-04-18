@@ -137,7 +137,7 @@ export default async function PostPage({ params }: Props) {
       />
       <ViewTracker slug={slug} />
       <div className="mx-auto max-w-3xl">
-        <header className="mb-8">
+        <header className="mb-6">
           <div className="mb-3 flex flex-wrap gap-2">
             {post.tags.map(tag => (
               <Link key={tag} href={`/tags/${encodeURIComponent(tag)}`}>
@@ -157,12 +157,12 @@ export default async function PostPage({ params }: Props) {
 
         {series && <SeriesPanel series={series} currentSlug={slug} />}
 
-        <div className="mb-8 lg:hidden">
+        <div className="mb-8 xl:hidden">
           <TableOfContents headings={post.headings} />
         </div>
       </div>
 
-      <div className="xl:grid xl:grid-cols-[minmax(0,46rem)_16rem] xl:gap-12">
+      <div className="xl:grid xl:grid-cols-[minmax(0,48rem)_16rem] xl:gap-12">
         <div id="post-content" className="prose prose-neutral mx-auto max-w-3xl dark:prose-invert xl:mx-0">
           <MDXRemote
             source={post.content}
