@@ -12,6 +12,7 @@ This repository focuses on:
 - rendering published posts
 - supporting blog posts, study-series posts, and downstream Instagram expansion
 - keeping `content/posts` compatible with the upstream publishing model
+- hosting new reader-facing consumers only when they have an explicit contract boundary
 
 This repository is not the primary wiki authoring source of truth.
 
@@ -41,6 +42,7 @@ Optional fields:
 - `seriesOrder`
 
 See [docs/content-contract.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/content-contract.md) for the full contract.
+See [docs/operating/consumer-boundaries.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/consumer-boundaries.md) for rules on adding new downstream consumers.
 See [docs/2026-04-15-final-consistency-review.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/2026-04-15-final-consistency-review.md) for the final cross-repository consistency review.
 
 ## Series Rules

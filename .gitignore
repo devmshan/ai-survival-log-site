@@ -50,3 +50,7 @@ next-env.d.ts
 
 # instagram exports
 /instagram/
+/output/state/*
+!/output/state/content-inventory.json
+!/output/state/series-manifest.json
+!/output/state/content-contract-summary.json
