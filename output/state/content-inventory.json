@@ -1,0 +1,214 @@
+{
+  "generatedAt": "2026-04-22T13:14:39.536Z",
+  "source": "content/posts",
+  "totalPosts": 12,
+  "entries": [
+    {
+      "slug": "2026-04-09-ecc-complete-guide",
+      "path": "content/posts/2026-04-09-ecc-complete-guide.mdx",
+      "title": "Everything Claude Code (ECC) 완전 가이드",
+      "date": "2026-04-09",
+      "draft": false,
+      "tags": [
+        "claude-code",
+        "AI",
+        "ecc",
+        "productivity"
+      ],
+      "description": "AI 에이전트 하네스를 위한 성능 최적화 시스템 — 47개 에이전트, 181개 스킬, 79개 커맨드를 즉시 사용하는 방법",
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-10-why-ai-survival-log",
+      "path": "content/posts/2026-04-10-why-ai-survival-log.mdx",
+      "title": "요트 경주에 뒤늦게 올라탄 개발자의 항해일지",
+      "date": "2026-04-10",
+      "draft": false,
+      "tags": [
+        "AI",
+        "회고",
+        "Claude Code",
+        "AX",
+        "시작"
+      ],
+      "description": "AI 시대는 요트 경주다. 바람이 모든 걸 지배하는 경주에 뒤늦게 올라탄 개발자의 이야기.",
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-11-devsurvivallog-philosophy",
+      "path": "content/posts/2026-04-11-devsurvivallog-philosophy.mdx",
+      "title": "dev.survival.log 철학과 다짐",
+      "date": "2026-04-11",
+      "draft": false,
+      "tags": [
+        "소개",
+        "철학",
+        "성장",
+        "AI"
+      ],
+      "description": "개발자의 언어로 나를 정의하는 방식. devsurvivallog가 존재하는 이유.",
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-12-ai-unbundle-myself",
+      "path": "content/posts/2026-04-12-ai-unbundle-myself.mdx",
+      "title": "AI가 먹고 있다, 나를 해체한다",
+      "date": "2026-04-12",
+      "draft": false,
+      "tags": [
+        "AI",
+        "RLVR",
+        "성장",
+        "철학"
+      ],
+      "description": "AI는 검증 가능한 모든 도메인을 정복한다. 그 알고리즘을 나에게 돌린다.",
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-13-coding-with-gunseung",
+      "path": "content/posts/2026-04-13-coding-with-gunseung.mdx",
+      "title": "AI한테 내 인스타 분석 맡겼더니 캐릭터가 나왔다",
+      "date": "2026-04-13",
+      "draft": false,
+      "tags": [
+        "AI",
+        "캐릭터디자인",
+        "devsurvivallog",
+        "건승",
+        "Context Graph"
+      ],
+      "description": "AI가 내 인스타 포스트 10개를 분석하고 캐릭터 페르소나를 뽑아냈다. 나를 해체하는 첫 번째 시도.",
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-14-how-llm-works",
+      "path": "content/posts/2026-04-14-how-llm-works.mdx",
+      "title": "도서관과 교수님의 뇌 — LLM이 실제로 작동하는 방식",
+      "date": "2026-04-14",
+      "draft": false,
+      "tags": [
+        "llm",
+        "embedding",
+        "rag",
+        "vector-db",
+        "ai-architecture"
+      ],
+      "description": "파라미터, 임베딩, RAG, Vector DB, 지식그래프까지 — LLM이 어떻게 작동하는지를 도서관 비유로 쉽게 풀어낸다.",
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-14-system-design-interview-01",
+      "path": "content/posts/2026-04-14-system-design-interview-01.mdx",
+      "title": "대규모 시스템 설계 스터디 01 — 1명에서 수백만 명까지",
+      "date": "2026-04-14",
+      "draft": false,
+      "tags": [
+        "system-design",
+        "scalability",
+        "distributed-systems",
+        "study",
+        "backend"
+      ],
+      "description": "서버 1대에서 수백만 사용자까지 — 아키텍처가 어떻게 진화하는지 1장 핵심 정리",
+      "series": "대규모 시스템 설계 스터디",
+      "seriesSlug": "system-design-interview",
+      "seriesOrder": 1,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-15-claude-code-to-codex",
+      "path": "content/posts/2026-04-15-claude-code-to-codex.mdx",
+      "title": "Claude Code만 쓰던 프로젝트에 Codex를 넣어봤다",
+      "date": "2026-04-15",
+      "draft": false,
+      "tags": [
+        "claude-code",
+        "codex",
+        "agentic-workflow",
+        "harness",
+        "workflow",
+        "llm-ops"
+      ],
+      "description": "Claude Code만으로 굴리던 프로젝트에 Codex를 넣으면서, 도구 비교가 아니라 운영 모델 자체를 다시 설계하게 된 과정.",
+      "series": "Claude Code × Codex 실전기",
+      "seriesSlug": "claude-codex-ops",
+      "seriesOrder": 1,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-17-developer-automation-lab-01-pr-summary",
+      "path": "content/posts/2026-04-17-developer-automation-lab-01-pr-summary.mdx",
+      "title": "개발자 자동화 실습 01 — PR summary를 직접 만들고 실제 PR에서 확인했다",
+      "date": "2026-04-17",
+      "draft": false,
+      "tags": [
+        "automation",
+        "pull-request",
+        "workflow",
+        "github",
+        "code-review",
+        "developer",
+        "study"
+      ],
+      "description": "PR summary가 무엇인지 이해하는 데서 시작해, 규칙 기반 자동화를 직접 실습하고 실제 GitHub PR 댓글까지 확인한 기록.",
+      "series": "개발자 자동화 실습",
+      "seriesSlug": "developer-automation-lab",
+      "seriesOrder": 1,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-18-blog-seo-foundation",
+      "path": "content/posts/2026-04-18-blog-seo-foundation.mdx",
+      "title": "블로그 검색엔진 최적화 작업 기록 — robots.txt, sitemap, Search Console까지 한 번에 정리",
+      "date": "2026-04-18",
+      "draft": false,
+      "tags": [
+        "seo",
+        "blog",
+        "search-console",
+        "nextjs",
+        "developer",
+        "study"
+      ],
+      "description": "검색 노출이 약한 블로그에 검색엔진 최적화를 적용하고, Search Console 제출까지 실제로 진행한 작업 기록.",
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-18-claude-plan-codex-validate",
+      "path": "content/posts/2026-04-18-claude-plan-codex-validate.mdx",
+      "title": "Claude가 짜고 Codex가 깼다 — 저장소 구조 리팩토링",
+      "date": "2026-04-18",
+      "draft": false,
+      "tags": [
+        "claude-code",
+        "codex",
+        "collaboration",
+        "repo-structure",
+        "validation",
+        "planning"
+      ],
+      "description": "Claude로 저장소 구조 변경 계획서를 썼다. Codex가 실제 저장소를 뒤져서 문제를 두 개 찾아냈다. 계획을 다시 짜고, 실행했다. 그 과정에서 나온 패턴.",
+      "series": "Claude Code × Codex 실전기",
+      "seriesSlug": "claude-codex-ops",
+      "seriesOrder": 2,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-18-graphify-evaluation",
+      "path": "content/posts/2026-04-18-graphify-evaluation.mdx",
+      "title": "Graphify는 마크다운도 된다 — 그래도 안 쓴 이유",
+      "date": "2026-04-18",
+      "draft": false,
+      "tags": [
+        "graphify",
+        "wiki",
+        "knowledge-management",
+        "markdown",
+        "tool-evaluation",
+        "obsidian-web-clipper"
+      ],
+      "description": "Graphify를 잘못된 명령으로 테스트해서 틀린 결론을 냈다. 다시 확인했더니 마크다운도 처리된다. 그래도 지금 이 위키에는 안 쓴다 — 이유는 '못 해서'가 아니라 '지금은 필요 없어서'.",
+      "hasThumbnail": false
+    }
+  ]
+}

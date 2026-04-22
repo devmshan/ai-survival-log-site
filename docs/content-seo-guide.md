@@ -15,6 +15,19 @@
 
 이 문서는 기술 SEO가 아니라 글 자체의 검색 대응력에 관한 규칙을 다룬다.
 
+## Scope Boundary
+
+이 가이드는 블로그형 텍스트 콘텐츠와 그 변형에 우선 적용한다.
+
+자동으로 포함되지 않는 대상:
+
+- YouTube 스크립트
+- 웹툰 스토리보드
+- 발표자료 슬라이드
+- 비블로그형 소셜 자산
+
+이런 lane는 원칙을 재사용할 수는 있지만, 공식 workflow가 되면 별도 lane 규칙이나 contract를 가져야 한다.
+
 ---
 
 ## 기본 원칙
@@ -24,6 +37,30 @@
 - 독자가 첫 10초 안에 “이 글이 무엇을 설명하는가”를 이해할 수 있어야 한다.
 - 한 글이 끝에서 끊기지 않게 관련 글과 시리즈로 연결해야 한다.
 - 모든 글이 같은 방식으로 검색을 노릴 필요는 없지만, 검색 유입을 기대하는 글은 아래 규칙을 기본으로 따른다.
+
+## Enforcement Levels
+
+이 문서는 선택 가이드가 아니라 운영 규칙이다.
+
+### `warn`
+
+- 제목, 요약, 도입부가 더 검색 친화적으로 개선될 여지가 있음
+- 관련 글 연결이 얕지만 완전히 비어 있지는 않음
+- `thumbnail`이 없어도 렌더링은 되지만 공유 품질은 약해짐
+
+### `block`
+
+- 발행 글인데 주제가 제목/요약/도입부 어디에서도 분명히 드러나지 않음
+- tone-first 제목인데 필요한 `seoTitle`이 없음
+- `description` 또는 `seoDescription`이 실질 주제를 설명하지 못함
+- 내부 링크가 날짜 접두사 없는 잘못된 경로를 사용함
+- `## 함께 읽으면 좋은 글` 섹션이 없음
+
+### `escalate`
+
+- upstream `ai-survival-log`와 다른 SEO 작성 규칙을 의도적으로 채택함
+- `seoTitle`, `seoDescription`, canonical handling의 의미를 바꿈
+- 관련 글/시리즈 탐색 규칙을 콘텐츠 계약 수준에서 바꿈
 
 ---
 
@@ -98,6 +135,12 @@
 - `Claude Code에서 Codex로 갈아탄 이유와 차이점 정리`
 - `ECC 완전 가이드: 설치, 사용법, 주의할 점까지`
 
+다음 조건이면 `seoTitle` 누락을 `block`으로 본다:
+
+- 기본 제목이 감성적이거나 서사 중심이다
+- 검색자가 찾을 핵심 개념이 제목 앞부분에 없다
+- 도입부만 읽어도 개념이 늦게 드러난다
+
 피할 예:
 
 - 개념어가 전혀 없는 추상 제목
@@ -127,6 +170,8 @@
 - 핵심 주제 포함
 - 독자가 얻는 내용 포함
 - 과장 없이 구체적
+
+기본 `description`이 톤 유지에는 성공했지만 검색 의도 설명에는 실패하면 `seoDescription`을 추가하거나 기본 설명 자체를 고친다.
 
 ---
 
@@ -217,6 +262,8 @@
 
 태그가 다른 글과 고립된 글은 "관련 글" 섹션이 아예 표시되지 않는다. 이런 경우 "함께 읽으면 좋은 글" 수동 섹션이 반드시 필요하다.
 
+발행 글에서 이 섹션이 없으면 `block`이다. 자동 관련 글 카드가 있으니 생략해도 된다고 판단하지 않는다.
+
 ---
 
 ## 토픽 클러스터 규칙
@@ -243,6 +290,12 @@
 - 가능하면 글 주제를 설명하는 이미지나 도식 이미지를 넣는다
 - 이미지가 없으면 기본 fallback이 사용되지만, 검색/공유 품질은 낮아질 수 있다
 
+엣지 케이스:
+
+- `thumbnail`이 있지만 실제 파일이 없음
+- 기본 fallback만 있고 글 공유 품질을 기대하는 경우
+- 이미지 경로가 계약과 다르게 작성됨
+
 ---
 
 ## 작성 체크리스트
@@ -261,6 +314,14 @@
 - [ ] `## 함께 읽으면 좋은 글` 섹션이 있는가 (최소 2개 링크)
 - [ ] `##` 헤더에 번호 접두사(`## 1.`, `## 2.`)가 없는가
 - [ ] 시리즈화 가능성이 있으면 `series`, `seriesSlug`, `seriesOrder`를 검토했는가
+
+## 엣지 케이스
+
+- tone-first 제목이 본문 도입부에서도 보완되지 않음
+- `description`이 감상은 전달하지만 주제를 설명하지 않음
+- 태그가 고립되어 자동 관련 글이 비어 있는데 수동 링크도 없음
+- 시리즈 글인데 현재 글의 위치가 설명되지 않음
+- downstream 후처리 과정에서 upstream 제목/요약 규칙과 drift가 생김
 
 ---
 
@@ -283,8 +344,8 @@
 
 ## 운영 연결 문서
 
-- [docs/content-contract.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/content-contract.md)
-- [docs/automation/seo-operations.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/automation/seo-operations.md)
+- [docs/operating/content-contract.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/content-contract.md)
+- [docs/operating/seo-operations.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/seo-operations.md)
 - [docs/superpowers/plans/2026-04-17-seo-foundation-plan.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/superpowers/plans/2026-04-17-seo-foundation-plan.md)
 
 ---

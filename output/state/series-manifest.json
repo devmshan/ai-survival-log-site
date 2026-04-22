@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-04-22T13:14:39.548Z",
+  "source": "content/posts",
+  "totalSeries": 3,
+  "entries": [
+    {
+      "seriesSlug": "claude-codex-ops",
+      "series": "Claude Code × Codex 실전기",
+      "posts": [
+        {
+          "slug": "2026-04-15-claude-code-to-codex",
+          "title": "Claude Code만 쓰던 프로젝트에 Codex를 넣어봤다",
+          "date": "2026-04-15",
+          "seriesOrder": 1
+        },
+        {
+          "slug": "2026-04-18-claude-plan-codex-validate",
+          "title": "Claude가 짜고 Codex가 깼다 — 저장소 구조 리팩토링",
+          "date": "2026-04-18",
+          "seriesOrder": 2
+        }
+      ]
+    },
+    {
+      "seriesSlug": "developer-automation-lab",
+      "series": "개발자 자동화 실습",
+      "posts": [
+        {
+          "slug": "2026-04-17-developer-automation-lab-01-pr-summary",
+          "title": "개발자 자동화 실습 01 — PR summary를 직접 만들고 실제 PR에서 확인했다",
+          "date": "2026-04-17",
+          "seriesOrder": 1
+        }
+      ]
+    },
+    {
+      "seriesSlug": "system-design-interview",
+      "series": "대규모 시스템 설계 스터디",
+      "posts": [
+        {
+          "slug": "2026-04-14-system-design-interview-01",
+          "title": "대규모 시스템 설계 스터디 01 — 1명에서 수백만 명까지",
+          "date": "2026-04-14",
+          "seriesOrder": 1
+        }
+      ]
+    }
+  ]
+}

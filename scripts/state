@@ -1,0 +1,236 @@
+#!/usr/bin/env node
+
+import fs from 'fs'
+import path from 'path'
+import matter from 'gray-matter'
+import { fileURLToPath, pathToFileURL } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const PROJECT_ROOT = path.resolve(__dirname, '..')
+const POSTS_DIR = path.join(PROJECT_ROOT, 'content', 'posts')
+const OUTPUT_STATE_DIR = path.join(PROJECT_ROOT, 'output', 'state')
+const REQUIRED_FIELDS = ['title', 'date', 'tags', 'description', 'draft']
+
+export function nowIso() {
+  return new Date().toISOString()
+}
+
+export function ensureOutputDir(outputDir = OUTPUT_STATE_DIR) {
+  fs.mkdirSync(outputDir, { recursive: true })
+}
+
+export function writeJson(filename, payload, outputDir = OUTPUT_STATE_DIR) {
+  ensureOutputDir(outputDir)
+  const filePath = path.join(outputDir, filename)
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf-8')
+  return filePath
+}
+
+export function listPostFiles(postsDir = POSTS_DIR) {
+  return fs.readdirSync(postsDir)
+    .filter(file => file.endsWith('.mdx') || file.endsWith('.md'))
+    .map(file => path.join(postsDir, file))
+    .sort()
+}
+
+export function readPost(filePath, projectRoot = PROJECT_ROOT) {
+  let raw
+  try {
+    raw = fs.readFileSync(filePath, 'utf-8')
+  } catch (error) {
+    throw new Error(`failed to read post file: ${filePath}`, { cause: error })
+  }
+
+  let data
+  try {
+    ({ data } = matter(raw))
+  } catch (error) {
+    throw new Error(`failed to parse frontmatter for post: ${filePath}`, { cause: error })
+  }
+  const filename = path.basename(filePath)
+  const slug = filename.replace(/\.(mdx|md)$/, '')
+
+  return {
+    filePath,
+    relativePath: path.relative(projectRoot, filePath),
+    slug,
+    data,
+  }
+}
+
+export function exportContentInventory(posts, outputDir = OUTPUT_STATE_DIR) {
+  const entries = posts.map(({ relativePath, slug, data }) => ({
+    slug,
+    path: relativePath,
+    title: data.title ?? slug,
+    date: data.date ?? '',
+    draft: data.draft ?? false,
+    tags: Array.isArray(data.tags) ? data.tags : [],
+    description: data.description ?? '',
+    series: data.series,
+    seriesSlug: data.seriesSlug,
+    seriesOrder: data.seriesOrder,
+    hasThumbnail: typeof data.thumbnail === 'string' && data.thumbnail.length > 0,
+  }))
+
+  return writeJson('content-inventory.json', {
+    generatedAt: nowIso(),
+    source: 'content/posts',
+    totalPosts: entries.length,
+    entries,
+  }, outputDir)
+}
+
+export function exportSeriesManifest(posts, outputDir = OUTPUT_STATE_DIR) {
+  const grouped = new Map()
+
+  for (const { slug, data } of posts) {
+    if (data.draft ?? false) continue
+    if (!data.series || !data.seriesSlug) continue
+
+    if (!grouped.has(data.seriesSlug)) {
+      grouped.set(data.seriesSlug, {
+        name: data.series,
+        posts: [],
+      })
+    }
+
+    grouped.get(data.seriesSlug).posts.push({
+      slug,
+      title: data.title ?? slug,
+      date: data.date ?? '',
+      seriesOrder: data.seriesOrder,
+    })
+  }
+
+  const entries = Array.from(grouped.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([seriesSlug, group]) => {
+      const orderedPosts = [...group.posts]
+        .filter(post => typeof post.seriesOrder === 'number')
+        .sort((a, b) => {
+          if (a.seriesOrder !== b.seriesOrder) return a.seriesOrder - b.seriesOrder
+          return new Date(a.date).getTime() - new Date(b.date).getTime()
+        })
+
+      return {
+        seriesSlug,
+        series: group.name,
+        posts: orderedPosts,
+      }
+    })
+
+  return writeJson('series-manifest.json', {
+    generatedAt: nowIso(),
+    source: 'content/posts',
+    totalSeries: entries.length,
+    entries,
+  }, outputDir)
+}
+
+export function exportContentContractSummary(posts, outputDir = OUTPUT_STATE_DIR) {
+  const missingRequired = []
+  const typeErrors = []
+  const warnings = []
+  const nonDraftSeries = new Map()
+
+  for (const { relativePath, slug, data } of posts) {
+    for (const field of REQUIRED_FIELDS) {
+      if (!(field in data)) {
+        missingRequired.push({ path: relativePath, field })
+      }
+    }
+
+    if ('title' in data && typeof data.title !== 'string') typeErrors.push({ path: relativePath, field: 'title' })
+    if ('date' in data && typeof data.date !== 'string') typeErrors.push({ path: relativePath, field: 'date' })
+    if ('tags' in data && !Array.isArray(data.tags)) typeErrors.push({ path: relativePath, field: 'tags' })
+    if ('description' in data && typeof data.description !== 'string') typeErrors.push({ path: relativePath, field: 'description' })
+    if ('draft' in data && typeof data.draft !== 'boolean') typeErrors.push({ path: relativePath, field: 'draft' })
+    if ('series' in data && typeof data.series !== 'string') typeErrors.push({ path: relativePath, field: 'series' })
+    if ('seriesSlug' in data && typeof data.seriesSlug !== 'string') typeErrors.push({ path: relativePath, field: 'seriesSlug' })
+    if ('seriesOrder' in data && typeof data.seriesOrder !== 'number') typeErrors.push({ path: relativePath, field: 'seriesOrder' })
+
+    if (data.series && !data.seriesSlug) {
+      warnings.push({ path: relativePath, code: 'missing-series-slug' })
+    }
+
+    if (!(data.draft ?? false) && data.series && data.seriesSlug) {
+      if (!nonDraftSeries.has(data.seriesSlug)) nonDraftSeries.set(data.seriesSlug, [])
+      nonDraftSeries.get(data.seriesSlug).push({ slug, path: relativePath, order: data.seriesOrder, date: data.date ?? '' })
+      if (data.seriesOrder === undefined) {
+        warnings.push({ path: relativePath, code: 'missing-series-order' })
+      }
+    }
+  }
+
+  for (const [seriesSlug, entries] of nonDraftSeries.entries()) {
+    const seen = new Map()
+    for (const entry of entries) {
+      if (entry.order === undefined) continue
+      if (!seen.has(entry.order)) seen.set(entry.order, [])
+      seen.get(entry.order).push(entry.path)
+    }
+    for (const [order, paths] of seen.entries()) {
+      if (paths.length > 1) {
+        warnings.push({ code: 'duplicate-series-order', seriesSlug, seriesOrder: order, paths })
+      }
+    }
+  }
+
+  const totalPosts = posts.length
+  const draftPosts = posts.filter(post => post.data.draft ?? false).length
+
+  return writeJson('content-contract-summary.json', {
+    generatedAt: nowIso(),
+    source: 'content/posts',
+    totalPosts,
+    draftPosts,
+    publishedPosts: totalPosts - draftPosts,
+    missingRequiredCount: missingRequired.length,
+    typeErrorCount: typeErrors.length,
+    warningCount: warnings.length,
+    missingRequired,
+    typeErrors,
+    warnings,
+    valid: missingRequired.length === 0 && typeErrors.length === 0,
+  }, outputDir)
+}
+
+export function main() {
+  const onlyIndex = process.argv.indexOf('--only')
+  const allowedOnly = new Set(['all', 'content-inventory', 'series-manifest', 'content-contract-summary'])
+  const only = onlyIndex >= 0 ? process.argv[onlyIndex + 1] : 'all'
+
+  if (onlyIndex >= 0 && !only) {
+    console.error('[state] ERROR missing value for --only')
+    return 1
+  }
+
+  if (!allowedOnly.has(only)) {
+    console.error(`[state] ERROR invalid value for --only: ${only}`)
+    return 1
+  }
+
+  const posts = listPostFiles().map(filePath => readPost(filePath))
+  const written = []
+
+  if (only === 'all' || only === 'content-inventory') {
+    written.push(exportContentInventory(posts))
+  }
+  if (only === 'all' || only === 'series-manifest') {
+    written.push(exportSeriesManifest(posts))
+  }
+  if (only === 'all' || only === 'content-contract-summary') {
+    written.push(exportContentContractSummary(posts))
+  }
+
+  for (const filePath of written) {
+    console.log(`[state] wrote ${path.relative(PROJECT_ROOT, filePath)}`)
+  }
+  return 0
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  process.exitCode = main()
+}
