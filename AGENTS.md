@@ -22,6 +22,17 @@ Use this default loop for non-trivial changes:
 2. Implement
 3. Verify
 
+## Planning Rules
+
+For non-trivial structural, contract, or workflow changes:
+
+- start with document-first exploration of the relevant architecture, operating, ADR, and contract docs
+- discuss or escalate changes that require a real technical or product decision instead of guessing silently
+- keep implementation plans scoped so each step changes one layer, module, or contract surface at a time
+- make each written step self-contained: include the files to read, the goal, the constraints, and the validation commands
+- write acceptance criteria as executable commands or explicit verification procedures, not abstract success statements
+- write prohibitions concretely in `do not X because Y` form when a plan needs guardrails
+
 ## Rule Precedence
 
 When documents overlap, follow this order:
@@ -102,6 +113,7 @@ Use these documents as the authoritative detailed references instead of expandin
 - [docs/operating/validation-matrix.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/validation-matrix.md) — change-type-to-required-check map
 - [docs/operating/consumer-boundaries.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/consumer-boundaries.md) — rules for new downstream consumers
 - [docs/templates/prd.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/templates/prd.md) — feature-level PRD template for contract-sensitive work
+- [docs/references/harness-framework-reference.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/references/harness-framework-reference.md) — reference workflow ideas adapted selectively, not a runtime contract
 - [docs/adr/0001-site-consumer-contract-boundary.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/adr/0001-site-consumer-contract-boundary.md)
 - [docs/adr/0002-harness-layering-for-site-repo.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/adr/0002-harness-layering-for-site-repo.md)
 - [docs/adr/0003-manual-posts-must-remain-contract-compatible.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/adr/0003-manual-posts-must-remain-contract-compatible.md)
