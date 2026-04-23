@@ -1,0 +1,112 @@
+---
+title: "도서관과 교수님의 뇌 02 — Anthropic을 따라가다 다시 LLM을 공부하게 된 이유"
+seoTitle: "LLM 내부 동작 다시 공부하기 — Tokenizer부터 KV cache까지"
+date: "2026-04-24"
+tags: ["llm", "tokenizer", "kv-cache", "lm-head", "anthropic", "study", "ai-architecture"]
+description: "Claude 구독비 문제로 Anthropic 방향성을 파악하다가 Mythos 10T 루머를 만났고, 그 질문 하나가 tokenizer, LM head, KV cache까지 이어졌다. 공부하게 된 계기와 LLM 내부 파이프라인을 서사로 따라간 기록."
+draft: false
+series: "도서관과 교수님의 뇌"
+seriesSlug: "professors-brain"
+seriesOrder: 2
+---
+
+선택의 기로에 서 있었다.
+
+Claude Code를 2달 쓰면서 4월 들어 토큰 소모량이 눈에 띄게 늘었다는 체감이 있었다. Codex도 구독해서 꽉 채워 써보면서 "내가 잘못 쓰고 있는 건지, Anthropic의 정책이 바뀐 건지" 판단이 필요했다. 그래서 Anthropic의 방향을 파악하기 시작했다. GPU shortage, Mythos, Claude Design — 뉴스들을 하나씩 따라갔다.
+
+그러다 이 질문에서 멈췄다.
+
+> "Claude Mythos 모델의 크기가 10T라는데, T가 무슨 단위예요?"
+
+trillion이었다. 10조 파라미터. 공식 스펙도 아닌 루머. 근데 그 질문이 이상하게 이어졌다. 파라미터가 정확히 뭐지. 어디에 어떻게 존재하는 거지. 그러다 tokenizer에 걸렸고, LM head로, KV cache까지 내려가게 됐다.
+
+[01편](/posts/2026-04-14-how-llm-works)에서 도서관 비유로 LLM의 바깥 구조를 그린 적이 있다. 이번엔 그 구조가 실제로 어떻게 돌아가는지 — 텍스트가 입력되고 출력이 나오기까지 파이프라인을 직접 따라가 보았다.
+
+---
+
+## vocabulary가 준다는 말이 걸렸다
+
+tokenizer 설계가 달라진 것 같다는 체감이 있었다. vocabulary 숫자가 줄었다는 느낌.
+
+처음엔 이렇게 생각했다. vocabulary가 준다면 더 작은 vocab으로 같은 텍스트를 처리하게 되니, `hello`가 1토큰이 아니라 `he + llo`처럼 더 잘게 쪼개진다. 그러면 같은 문장도 더 많은 토큰으로 분해된다.
+
+그래서 이 질문을 했다.
+
+> "vocabulary가 준다면 LLM은 이득, 사용자는 손해인가요?"
+
+대체로 맞는 방향이었다. vocab이 작아지면 embedding table과 LM head의 크기가 줄어 모델 입장에서는 파라미터가 가벼워진다. 대신 같은 의미를 표현하는 데 필요한 토큰 수가 늘어난다. `토큰 단가`가 오른 것이 아니라, 같은 결과물을 얻기 위해 더 많은 토큰을 소비하게 되는 것이다.
+
+여기서 처음으로 **embedding**과 **LM head**가 파라미터와 직결된다는 것을 알았다. 이 두 개가 뭔지를 제대로 이해해야 했다.
+
+한 번 틀린 생각이 있었다. BPE(Byte-Pair Encoding) 방식이면 vocab이 줄어도 어떤 단어든 표현 가능하니, embedding이나 LM head에는 영향이 없다고 본 것이다.
+
+틀렸다. BPE는 텍스트를 조각내는 방식을 정의하는 것이지 embedding table이나 LM head 크기를 없애지 않는다. vocab이 줄면 embedding row 수와 LM head 출력 차원도 그만큼 준다. 비용이 사라지는 게 아니라 이동한다.
+
+---
+
+## LM head는 포인터 같다는 느낌이 맞았다
+
+LLM이 텍스트를 처리하는 순서를 직접 그려봤다.
+
+```
+텍스트
+  → tokenizer
+  → token IDs
+  → embedding
+  → transformer blocks
+  → hidden states
+  → LM head
+  → 다음 토큰 확률
+  → token 선택
+  → 텍스트
+```
+
+- **embedding**: token ID를 벡터로 바꾸는 입력층. token을 모델이 계산할 수 있는 형태로 변환한다.
+- **transformer blocks**: 그 벡터를 문맥을 반영해 계속 가공하는 층들.
+- **hidden states**: 각 층에서 토큰이 현재 어떻게 이해되고 있는지를 담는 내부 벡터.
+- **LM head**: 마지막 hidden state를 vocabulary 전체에 대한 점수로 변환하는 출력층.
+
+이 구조를 보면서 "LM head는 포인터 같은 느낌이네요"라고 했는데, 맞는 감각이었다. 파이프라인 끝에서 다음에 올 토큰을 vocabulary 전체 중 하나로 가리키는 역할이다. 그리고 그 선택된 토큰이 다시 입력에 붙어서 같은 파이프라인을 반복한다. 자동회귀 생성이 그 반복이다.
+
+파라미터는 이 파이프라인의 어디에 있을까. embedding, transformer blocks, LM head에 들어 있는 **학습된 가중치**가 파라미터다. hidden states나 다음 토큰 확률, token 선택은 계산 결과이지 파라미터가 아니다.
+
+여기서 또 한 번 틀린 생각을 했다. 이 반복 자체가 "깊게 생각하는 것"이라고 이해했다. 토큰을 하나 뽑고 → 다시 입력에 붙여서 → 다시 embedding → transformer → LM head — 이 루프를 더 많이 돌면 더 깊이 생각하는 것 아닌가.
+
+아니었다. 이 반복은 자동회귀 생성의 기본 메커니즘이다. 문장을 한 토큰씩 만드는 것 자체가 그 반복이고, 그건 길이에 관한 문제지 깊이에 관한 문제가 아니다. 깊은 추론은 더 많은 후보를 비교하거나, 중간에 검증하거나, 여러 경로를 탐색할 때 생긴다. Adaptive Thinking이 "쉬운 질문에 짧게, 어려운 문제에 더 많은 추론 예산을 쓴다"는 개념인 것도 이 때문이다. 출력 길이와 추론 깊이는 다른 차원이다.
+
+---
+
+## 파라미터는 고정되어 있다, activation과 KV cache는 다르다
+
+파라미터를 이해하고 나니 activation과 KV cache가 어떻게 다른지 물어볼 수 있었다.
+
+- **파라미터(parameters)**: 학습이 끝난 뒤 고정된 가중치. 모델 파일에 저장되어 있다.
+- **activation**: 입력을 처리하는 중에 생기는 중간 계산값. 매 요청마다 새로 계산되고 요청이 끝나면 사라진다.
+- **KV cache**: activation 중에서도 attention의 Key, Value를 재사용하려고 보관하는 부분. 자동회귀 생성을 반복할 때 앞선 토큰을 다시 계산하지 않아도 된다.
+
+처음에는 이 세 가지를 막연하게 "모델이 가지고 있는 것들"로 뭉뚱그렸다. 파라미터도 모델 내부에 있고, activation도 모델이 처리하면서 생기는 것이고, KV cache도 모델이 쓰는 것이니까. 다 비슷한 범주처럼 느껴졌다.
+
+하지만 존재 방식이 완전히 다르다. 파라미터는 모델 파일 자체다 — 학습이 끝나면 고정되고, 서비스 중에 바뀌지 않는다. activation은 요청이 들어올 때 생겨서 처리가 끝나면 사라지는 임시 계산값이다. KV cache는 그 임시값 중에서 "자동회귀 반복에 다시 쓸 것"만 골라 잠시 보관하는 것이다.
+
+비유하면 이렇다. 파라미터는 교수님의 지식 자체다. activation은 지금 이 문제를 풀면서 생긴 메모지다. KV cache는 그 메모지 중에서 다음 문장을 쓸 때도 참고할 부분만 책상 한켠에 남겨둔 것이다. 요청이 끝나면 메모지는 버려지지만, 교수님의 지식은 그대로다.
+
+그리고 다시 tokenizer 질문으로 돌아오면: vocab이 준다면 embedding table과 LM head 크기가 줄어 파라미터 비용은 내려간다. 하지만 같은 텍스트를 더 많은 토큰으로 처리해야 하니 자동회귀 반복 횟수가 늘어난다. activation과 KV cache 부담은 올라간다. 비용이 단순히 줄거나 늘지 않고, 파라미터 축과 시퀀스 축 사이에서 이동한다.
+
+---
+
+## 정리 — 공부하지 않으면 판단이 얕아진다
+
+Anthropic이 왜 GPU shortage 상황에서 이런 설계를 택했는지, Adaptive Thinking이 단순히 "더 오래 생각한다"가 아닌 이유가 이 파이프라인을 이해하고 나니 조금 더 보였다.
+
+처음 질문은 구독비 문제였다. 내가 잘못 쓰고 있는 건지 확인하고 싶었다. 그러다 tokenizer에 걸렸고, LM head로, KV cache까지 내려갔다.
+
+공부하지 않으면 판단이 얕아진다. 비용 체감이 "Anthropic이 나쁜 것"인지 "tokenizer 설계 변경의 trade-off인지"는 내부 구조를 알아야 구분할 수 있다.
+
+다음 편에서는 Claude Design과 AI for Science를 연결하는 개념 — AI가 끊어진 루프를 닫는다는 것의 의미를 정리해볼 생각이다.
+
+---
+
+## 함께 읽으면 좋은 글
+
+- [도서관과 교수님의 뇌 01 — LLM이 실제로 작동하는 방식](/posts/2026-04-14-how-llm-works)
+- [Claude Code만 쓰던 프로젝트에 Codex를 넣어봤다](/posts/2026-04-15-claude-code-to-codex)
