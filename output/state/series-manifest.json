@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-04-22T13:14:39.548Z",
+  "generatedAt": "2026-04-23T14:49:29.288Z",
   "source": "content/posts",
-  "totalSeries": 3,
+  "totalSeries": 4,
   "entries": [
     {
       "seriesSlug": "claude-codex-ops",
@@ -29,6 +29,18 @@
           "slug": "2026-04-17-developer-automation-lab-01-pr-summary",
           "title": "개발자 자동화 실습 01 — PR summary를 직접 만들고 실제 PR에서 확인했다",
           "date": "2026-04-17",
+          "seriesOrder": 1
+        }
+      ]
+    },
+    {
+      "seriesSlug": "how-llm-works",
+      "series": "도서관과 교수님의 뇌 — LLM 작동 원리",
+      "posts": [
+        {
+          "slug": "2026-04-14-how-llm-works-01",
+          "title": "LLM은 어떻게 기억하고 답하는가 — 파라미터와 임베딩",
+          "date": "2026-04-14",
           "seriesOrder": 1
         }
       ]

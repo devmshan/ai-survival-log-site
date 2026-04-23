@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-22T13:14:39.536Z",
+  "generatedAt": "2026-04-23T14:49:29.272Z",
   "source": "content/posts",
   "totalPosts": 12,
   "entries": [
@@ -81,19 +81,20 @@
       "hasThumbnail": false
     },
     {
-      "slug": "2026-04-14-how-llm-works",
-      "path": "content/posts/2026-04-14-how-llm-works.mdx",
-      "title": "도서관과 교수님의 뇌 — LLM이 실제로 작동하는 방식",
+      "slug": "2026-04-14-how-llm-works-01",
+      "path": "content/posts/2026-04-14-how-llm-works-01.mdx",
+      "title": "LLM은 어떻게 기억하고 답하는가 — 파라미터와 임베딩",
       "date": "2026-04-14",
       "draft": false,
       "tags": [
         "llm",
         "embedding",
-        "rag",
-        "vector-db",
         "ai-architecture"
       ],
-      "description": "파라미터, 임베딩, RAG, Vector DB, 지식그래프까지 — LLM이 어떻게 작동하는지를 도서관 비유로 쉽게 풀어낸다.",
+      "description": "LLM은 Vector DB로 검색하지 않는다. 파라미터에 압축된 패턴과 임베딩의 세 가지 의미를 도서관 비유로 풀어낸다.",
+      "series": "도서관과 교수님의 뇌 — LLM 작동 원리",
+      "seriesSlug": "how-llm-works",
+      "seriesOrder": 1,
       "hasThumbnail": false
     },
     {
