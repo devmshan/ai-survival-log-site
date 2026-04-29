@@ -1,0 +1,303 @@
+---
+title: "개발자 자동화 실습 03 — 개인 Jira와 회사 Jira를 한 도구로 다루되 섞지 않는 법"
+seoTitle: "Jira 개인·회사 자동화 분리 설계 — profile과 shared harness"
+date: "2026-04-29"
+tags: ["automation", "jira", "codex", "workflow", "developer", "agent-harness", "company-wiki"]
+description: "개인 Jira PER와 회사 Jira KAN을 같은 자동화 도구로 다루면서도 섞지 않기 위해 personal-jira, company-jira, needs-classification profile과 shared-agent-harness skill 위치를 어떻게 나눴는지 정리한다."
+draft: false
+series: "개발자 자동화 실습"
+seriesSlug: "developer-automation-lab"
+seriesOrder: 3
+---
+
+[지난 글](/posts/2026-04-29-developer-automation-lab-02-jira-ticket-automation)에서는 Jira 티켓을 안전하게 만드는 파이프라인을 정리했다. `summary-only intake -> duplicate check -> dry-run -> exact confirmation -> apply` 흐름으로 개인 Jira `PER` 티켓 9개를 만들었다.
+
+그 다음에 남은 질문은 더 까다로웠다.
+
+개인 Jira와 회사 Jira를 같은 자동화 도구로 다뤄도 되는가.
+
+처음에는 간단해 보였다. `PER`는 개인 프로젝트고, `KAN`은 회사 프로젝트다. project key만 잘 보면 되는 것처럼 보였다. 그런데 실제로는 그 정도로는 부족했다. 같은 Atlassian 계정, 같은 Jira site, 같은 자동화 명령 안에서 개인 작업과 회사 작업을 다루려면, project key보다 먼저 소유권과 기록 위치를 분리해야 했다.
+
+이번 글은 Jira API 사용법이 아니라 Jira 자동화의 경계 설계에 관한 기록이다.
+
+---
+
+## project key만 보면 자동화가 너무 쉽게 섞인다
+
+처음에는 `PER`와 `KAN`을 나누면 충분하다고 생각했다.
+
+```text
+PER = 개인 Jira
+KAN = 회사 Jira
+```
+
+겉으로는 맞다. 하지만 자동화 관점에서는 부족했다.
+
+project key는 Jira 안의 위치를 알려준다. 하지만 그 티켓을 어디에 기록해야 하는지, 어떤 저장소가 durable record를 가져야 하는지, 어떤 write action까지 허용되는지는 말해주지 않는다.
+
+예를 들어 개인 학습 티켓은 `ai-survival-log`의 wiki tracking으로 충분하다. 하지만 회사 Jira 관리 기록은 `company-wiki`가 맡아야 한다. 회사 Jira write가 실제로 실행됐다면 실행 audit은 별도 운영 표면으로 넘겨야 한다.
+
+이 차이를 project key만으로 판단하면 위험하다.
+
+`KAN`이라는 key가 보인다고 해서 회사 도메인 evidence를 `company-wiki`에 그대로 복사해도 되는 것은 아니다. `PER`라는 key가 보인다고 해서 같은 명령을 회사 create에 그대로 써도 되는 것도 아니다.
+
+Jira 자동화에서 project key는 힌트일 뿐이다. 소유권 판단은 별도 profile이 해야 했다.
+
+---
+
+## 같은 Jira site보다 중요한 것은 기록의 주인이다
+
+이 실습에서 기록의 주인은 세 갈래로 나뉘었다.
+
+```text
+ai-survival-log       = 개인 학습, 블로그, 개인 Jira 추적
+company-wiki          = 회사 Jira 관리 요약과 routing
+shared-agent-harness  = 공통 명령, policy, skill
+```
+
+여기서 중요한 건 저장소 이름이 아니라 책임이다.
+
+`ai-survival-log`는 개인 지식과 블로그의 upstream authoring source다. 개인 Jira `PER` 티켓은 여기서 추적할 수 있다. 다만 Jira는 source of truth가 아니다. 학습 결과와 글의 본문은 wiki에 남고, Jira key는 작업 dashboard metadata로 남는다.
+
+`company-wiki`는 회사 Jira 관리 허브다. Jira issue key, summary-only description, routing, next action, waiting 상태 같은 안전한 관리 정보만 둔다. 회사 Jira 원문, ITSM 원문, source code, SQL, DB dump, credential, 상세 검수 증적은 여기에 그대로 복사하지 않는다.
+
+`shared-agent-harness`는 공통 실행 레이어다. 개인과 회사가 같은 패턴을 쓸 수 있도록 명령과 guardrail을 제공하지만, 어느 쪽의 durable knowledge source도 되면 안 된다.
+
+이 구분이 생기고 나서야 자동화의 질문이 바뀌었다.
+
+```text
+이 Jira issue는 어느 project key인가?
+```
+
+가 아니라:
+
+```text
+이 작업의 durable record는 어디에 남아야 하는가?
+이 명령은 어느 profile로 실행돼야 하는가?
+이 실행 결과는 어떤 audit surface가 소유해야 하는가?
+```
+
+이 질문으로 바꿔야 개인과 회사가 같은 도구를 쓰면서도 섞이지 않는다.
+
+---
+
+## profile은 옵션이 아니라 안전장치였다
+
+그래서 Jira 자동화에는 세 가지 classification profile을 뒀다.
+
+```text
+personal-jira
+company-jira
+needs-classification
+```
+
+`personal-jira`는 개인 학습, 블로그, 개인 tooling, 개인 task에만 쓴다. 이 profile의 durable record는 개인 wiki나 개인 ops surface로 간다.
+
+`company-jira`는 회사 업무에만 쓴다. 이 경우 durable management surface는 `company-wiki` 또는 승인된 회사 audit surface다.
+
+가장 중요한 profile은 사실 `needs-classification`이었다.
+
+분류가 애매하면 실행하지 않는다. 이것은 경고가 아니라 block이다. 개인 작업인지 회사 작업인지, 기록 위치가 어디인지, profile과 command가 맞는지 확정되지 않으면 Jira API credential을 꺼내기 전 단계에서 멈춰야 한다.
+
+이렇게 하지 않으면 자동화는 너무 친절해진다. 사용자가 애매하게 말해도 도구가 project key를 추측하고, summary에서 domain을 추측하고, 저장소 위치까지 추측하게 된다.
+
+그 순간부터 자동화는 보조 도구가 아니라 데이터 경계를 흐리는 도구가 된다.
+
+profile의 역할은 자동화를 빠르게 만드는 것이 아니었다. 애매한 작업을 멈추게 만드는 것이었다.
+
+---
+
+## command profile과 Jira profile은 서로 맞아야 했다
+
+Jira 자동화에는 두 종류의 profile이 필요했다.
+
+하나는 command-facing wiki profile이다.
+
+```text
+personal-wiki
+company-wiki
+```
+
+다른 하나는 Jira classification profile이다.
+
+```text
+personal-jira
+company-jira
+needs-classification
+```
+
+처음에는 둘을 하나로 합쳐도 될 것처럼 보였다. 하지만 실제로는 역할이 다르다.
+
+command-facing profile은 local planning artifact를 어디 기준으로 만들지 결정한다. `personal-wiki`면 개인 wiki 문맥으로 plan을 만들고, `company-wiki`면 회사 Jira 관리 문맥으로 plan을 만든다.
+
+Jira classification profile은 외부 Jira issue가 개인인지 회사인지, 아니면 분류 보류인지 결정한다.
+
+그래서 둘은 서로 맞아야 한다.
+
+```text
+personal-wiki + personal-jira = 허용 가능
+company-wiki  + company-jira  = 승인된 gate 안에서 허용 가능
+personal-wiki + company-jira  = block
+company-wiki  + personal-jira = block
+needs-classification          = block
+```
+
+이 규칙은 사소해 보이지만 실제로는 핵심 guardrail이다. 회사 Jira issue를 개인 wiki profile로 처리하면 회사 기록이 개인 저장소에 섞인다. 개인 티켓을 회사 wiki profile로 처리하면 개인 학습 기록이 회사 관리 표면에 들어간다.
+
+자동화는 입력을 받는 순간부터 분류를 강제해야 했다. 나중에 사람이 읽고 정리하면 된다는 방식은 Jira write automation에서는 너무 늦다.
+
+---
+
+## 회사 Jira에서는 write action마다 gate가 달라야 했다
+
+개인 Jira에서 `PER` 티켓을 만드는 일과 회사 Jira에서 `KAN`에 무언가 쓰는 일은 같은 위험 등급이 아니다.
+
+특히 회사 Jira에서는 write action을 하나로 묶으면 안 됐다.
+
+```text
+issue create
+comment write
+status transition
+field mutation
+attachment handling
+bulk write
+```
+
+이것들은 모두 Jira API를 쓰지만, 위험이 다르다.
+
+issue create는 새 기록을 만든다. comment write는 협업 표면에 문장을 남긴다. status transition은 workflow state를 바꾼다. field mutation은 routing, priority, ownership, due date 같은 운영 metadata에 영향을 줄 수 있다. attachment handling은 원문과 private payload 위험이 커진다.
+
+그래서 회사 Jira 자동화에서는 "한 번 create가 됐으니 이제 comment도 되고 status도 된다"는 식으로 확장하면 안 됐다.
+
+실제 정리는 더 좁았다.
+
+- controlled company create test는 특정 gate 안에서만 허용
+- `KAN-4` 같은 테스트 issue는 test evidence로만 취급
+- `KAN-1` 같은 durable planning record와 test issue를 분리
+- comment apply는 별도 pilot gate가 필요
+- status transition apply는 현재 표면에서는 block
+- broader company write는 category-specific gate 없이는 승인하지 않음
+
+이 흐름은 답답해 보일 수 있다. 하지만 회사 Jira 자동화에서 중요한 것은 한 번 성공한 API call이 아니다. 같은 도구가 다음 write category로 넘어갈 때 어떤 조건으로 멈출 수 있는지다.
+
+자동화 확장은 "할 수 있음"이 아니라 "허용된 범위가 무엇인가"로 관리해야 했다.
+
+---
+
+## Jira status는 완료 증거가 아니라 dashboard metadata였다
+
+회사 Jira 자동화에서 계속 반복된 원칙이 하나 있었다.
+
+```text
+Jira status is dashboard metadata.
+It is not wiki completion evidence.
+```
+
+Jira에서 Done이나 완료로 보인다고 해서, wiki에서도 완료 근거가 생기는 것은 아니다. Jira status는 작업 보드에서 현재 상태를 보여주는 metadata다. 하지만 왜 완료됐는지, 어떤 검토를 거쳤는지, 어떤 증거가 있는지는 별도의 durable record가 필요하다.
+
+이 원칙이 없으면 자동화가 위험해진다.
+
+예를 들어 sync report가 Jira status를 읽고 "Jira는 Done인데 wiki는 reviewing"이라고 알려주는 것은 유용하다. 하지만 그 보고서가 wiki 상태를 자동으로 done으로 바꾸면 문제가 된다.
+
+상태 차이를 보여주는 것과 완료를 승인하는 것은 다르다.
+
+그래서 read-only sync report는 허용할 수 있지만, status transition apply나 wiki 상태 자동 변경은 별도 gate 없이는 막아야 했다.
+
+Jira는 일을 보기 쉽게 해준다. 하지만 일을 끝냈다는 근거까지 대신 만들어주지는 않는다.
+
+---
+
+## 공통 skill은 개인 위키가 아니라 shared harness에 있어야 했다
+
+이번 실습에서 가장 실제적인 구조 수정은 skill 위치였다.
+
+처음에는 두 skill을 모두 `ai-survival-log`에 만들었다.
+
+```text
+ai-survival-log/.codex/skills/jira-per-ticket-auto-create
+ai-survival-log/.codex/skills/jira-ticket-create
+```
+
+그때 사용자가 물었다.
+
+> 2개 스킬이 ai-survival-log에 있는 것이 맞나요?
+
+이 질문이 중요했다. 처음에는 기능만 보고 있었다. 하지만 다시 보니 두 skill의 소유권이 달랐다.
+
+`jira-per-ticket-auto-create`는 개인 Jira `PER` 전용이다. 개인 학습이나 블로그 티켓을 여러 개 만들 때, summary-only intake부터 wiki tracking까지 이어지는 자동화다. 이건 `ai-survival-log`에 있어도 된다.
+
+반면 `jira-ticket-create`는 개인과 회사가 함께 쓰는 공통 단건 create workflow다. 개인 `PER`에도 쓸 수 있고, 승인된 회사 create gate에서도 쓸 수 있다. 이 skill이 개인 위키에 있으면 회사 자동화가 개인 저장소의 로컬 규칙을 빌려 쓰는 모양이 된다.
+
+그래서 최종 위치를 바꿨다.
+
+```text
+ai-survival-log/.codex/skills/jira-per-ticket-auto-create
+shared-agent-harness/skills/jira-ticket-create
+```
+
+이 차이는 작아 보이지만 운영상으로는 크다.
+
+개인 전용 자동화는 개인 저장소에 둔다. 개인과 회사가 함께 쓰는 공통 workflow는 shared harness에 둔다. 회사 운영 기록은 company-wiki와 승인된 audit surface가 맡는다.
+
+스킬화의 핵심은 명령어를 재사용하는 것이 아니라, 재사용해도 되는 범위를 정하는 것이었다.
+
+---
+
+## 같은 도구를 쓰려면 더 많은 이름이 필요했다
+
+자동화를 처음 만들 때는 이름이 많아지는 것을 부담스럽게 느끼기 쉽다.
+
+`PER`, `KAN`, `personal-jira`, `company-jira`, `needs-classification`, `personal-wiki`, `company-wiki`, `shared-agent-harness`, `company-assistant-ops`.
+
+처음 보면 복잡하다.
+
+하지만 이름이 부족하면 더 큰 문제가 생긴다. 개인 작업과 회사 작업을 같은 "Jira ticket"으로 부르면, 어느 저장소에 기록해야 하는지 흐려진다. create, comment, transition을 같은 "Jira write"로 부르면, 한 번 허용된 작업이 다른 작업까지 밀어붙인다.
+
+좋은 자동화는 이름을 줄이는 것이 아니라, 헷갈리면 안 되는 경계에 이름을 붙인다.
+
+이번 실습에서 붙인 이름들은 추상적인 아키텍처 장식이 아니었다. 실제로 명령이 멈춰야 하는 지점을 만들기 위한 이름이었다.
+
+```text
+needs-classification = 지금은 실행하지 말 것
+company-jira         = 회사 gate를 확인할 것
+personal-jira        = 개인 wiki tracking으로 제한할 것
+jira-ticket-create   = 공통 create workflow, shared harness 소유
+jira-per-ticket-auto-create = PER 전용 batch workflow, ai-survival-log 소유
+```
+
+이름을 잘 붙이면 자동화가 덜 마법처럼 동작한다. 대신 어디서 멈춰야 하는지 더 잘 보인다.
+
+---
+
+## 이번 후속 실습의 결론은 분리였다
+
+02편의 결론이 "Jira create는 안전장치가 먼저다"였다면, 이번 글의 결론은 "안전장치는 위치와 이름까지 포함한다"다.
+
+개인 Jira와 회사 Jira를 같은 도구로 다룰 수는 있다. 하지만 같은 규칙으로 다루면 안 된다.
+
+이번 실습에서 남은 기준은 이렇다.
+
+- project key는 routing의 힌트일 뿐 durable ownership을 결정하지 않는다.
+- 개인 Jira는 `personal-jira`, 회사 Jira는 `company-jira`로 분류한다.
+- 애매하면 `needs-classification`으로 block한다.
+- command-facing wiki profile과 Jira classification profile은 일치해야 한다.
+- 회사 Jira write는 create, comment, transition, field mutation, attachment를 각각 다른 gate로 본다.
+- Jira status는 dashboard metadata이고 wiki completion evidence가 아니다.
+- 개인 전용 skill은 개인 wiki에, 공통 skill은 shared harness에 둔다.
+
+자동화는 같은 일을 반복하기 위해 만든다. 그런데 반복 가능한 도구일수록 더 먼저 물어야 한다.
+
+```text
+이 반복이 어느 경계 안에서만 안전한가?
+```
+
+이번 Jira 실습에서 내가 얻은 답은 단순했다.
+
+같은 도구를 쓸 수는 있다.  
+하지만 같은 표면에 기록하면 안 되고, 같은 승인으로 실행하면 안 된다.
+
+## 함께 읽으면 좋은 글
+
+- [Jira 티켓 자동화 안전장치 설계](/posts/2026-04-29-developer-automation-lab-02-jira-ticket-automation)
+- [개발자 자동화 실습 01 — PR summary를 직접 만들고 실제 PR에서 확인했다](/posts/2026-04-17-developer-automation-lab-01-pr-summary)
+- [shared-agent-harness 분리와 5개 프로젝트 구조](/posts/2026-04-25-agent-harness-notes-02-detached-workspace)

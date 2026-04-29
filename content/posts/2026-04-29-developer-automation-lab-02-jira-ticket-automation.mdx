@@ -1,0 +1,268 @@
+---
+title: "개발자 자동화 실습 02 — Jira 티켓 자동화는 API 호출이 아니라 안전장치 설계다"
+seoTitle: "Jira 티켓 자동화 안전장치 설계 — duplicate check와 dry-run 실습"
+date: "2026-04-29"
+tags: ["automation", "jira", "codex", "workflow", "developer", "study"]
+description: "Jira API로 티켓을 자동 생성하기 전에 인증, 프로젝트 경계, 중복 확인, dry-run, exact confirmation, 실행 기록 검증을 어떻게 설계했는지 PER 티켓 9개 생성 실습과 스킬화 과정을 정리한다."
+draft: false
+series: "개발자 자동화 실습"
+seriesSlug: "developer-automation-lab"
+seriesOrder: 2
+---
+
+Jira 티켓 자동화라고 하면 보통 API 호출부터 떠올린다. 이메일과 API token을 넣고, project key와 summary를 넘기면 이슈가 하나 만들어지는 그림이다.
+
+근데 실제로 해보면 문제는 거기서 시작하지 않았다.
+
+토큰이 맞는지, 지금 접근하는 Atlassian 사이트가 맞는지, `PER`와 `KAN` 중 어느 프로젝트에 쓰려는지, issue type이 정확한지, 같은 티켓을 또 만들고 있는 건 아닌지부터 확인해야 했다. 그리고 더 중요한 질문이 하나 있었다. 개인 학습 티켓과 회사 업무 티켓을 같은 자동화 흐름으로 다뤄도 되는가.
+
+이번 실습에서는 개인 Jira `PER` 프로젝트에 학습과 블로그용 티켓 9개를 실제로 만들었다. 다만 목표는 "Jira API로 티켓 만들기"가 아니었다. 목표는 외부 시스템에 기록을 남기는 자동화를 어떻게 안전하게 설계할 것인가였다.
+
+---
+
+## PR summary 다음에는 외부 시스템에 쓰는 자동화가 왔다
+
+[개발자 자동화 실습 01](/posts/2026-04-17-developer-automation-lab-01-pr-summary)에서는 PR summary를 다뤘다. 그때의 자동화는 리뷰 보조에 가까웠다. 변경 파일을 보고, 위험도를 계산하고, 리뷰어가 먼저 볼 지점을 정리해 주는 흐름이었다.
+
+이번 Jira 자동화는 성격이 달랐다.
+
+PR summary는 틀려도 다시 고치면 된다. 하지만 Jira create는 외부 시스템에 실제 티켓을 만든다. 잘못된 project key로 만들 수도 있고, 회사 프로젝트에 개인 학습 티켓을 만들 수도 있고, 이미 있는 티켓을 중복으로 만들 수도 있다. 그래서 이번 실습은 "더 똑똑한 자동화"보다 "멈출 수 있는 자동화"에 가까웠다.
+
+자동화가 강해질수록 먼저 정해야 하는 것은 실행 능력이 아니라 실행 조건이었다.
+
+---
+
+## 처음 막힌 곳은 PER/KAN 권한이 아니라 인증이었다
+
+처음에는 `PER` 프로젝트에 접근할 수 있는지, 아니면 `KAN` 프로젝트만 접근 가능한지부터 확인하려고 했다. 그런데 실제 문제는 프로젝트 권한이 아니었다. Jira 인증 자체가 실패하고 있었다.
+
+`/rest/api/3/myself`를 호출했을 때 401 Unauthorized가 나왔다. 이 시점에서 `PER` 접근 문제인지 `KAN` 접근 문제인지 따지는 것은 의미가 없었다. 먼저 API token이 맞는지부터 확인해야 했다.
+
+이때 문제를 네 층으로 나눴다.
+
+- Python 명령을 잘못 붙여 넣은 문제
+- `jira_create.py`가 있는 디렉터리에서 실행하지 않은 문제
+- Atlassian API token이 틀렸거나 만료된 문제
+- 프로젝트별 권한이나 issue type 문제
+
+이 순서를 지키는 게 중요했다. 명령 복사 문제를 Jira 권한 문제로 착각하면 엉뚱한 곳을 고치게 된다. 반대로 401 인증 실패가 확인됐는데도 project key만 바꾸면 아무것도 해결되지 않는다.
+
+새 API token을 Keychain에 다시 등록한 뒤 `/myself`가 이렇게 돌아왔다.
+
+```text
+status: 200
+active: True
+```
+
+그제야 다음 단계로 넘어갈 수 있었다. 인증이 확인된 뒤에야 `PER`와 `KAN` 프로젝트의 issue type을 읽고, `PER`에는 개인 학습 티켓을 만들 수 있고 `KAN`은 회사 Jira 표면으로 따로 다뤄야 한다는 판단을 할 수 있었다.
+
+Jira 자동화의 첫 번째 교훈은 단순했다. 접근 문제를 보기 전에 인증 문제를 먼저 닫아야 한다.
+
+---
+
+## Jira는 source of truth가 아니라 작업 표면이어야 했다
+
+이 실습에서 가장 중요한 설계 결정은 Jira를 어디에 둘 것인가였다.
+
+내 개인 위키의 기본 흐름은 `raw -> wiki -> output/blog -> site`다. 여기서 source of truth는 `wiki/`다. Jira는 공부 결과나 블로그 원고를 저장하는 곳이 아니라, 내가 어떤 작업을 해야 하는지 보여주는 dashboard에 가깝다.
+
+회사 쪽은 더 조심해야 했다. 회사 Jira `KAN`과 관련된 기록은 개인 위키에 원문으로 들어오면 안 된다. 회사 업무 요약과 routing은 `company-wiki`가 맡고, 실행 audit은 별도 운영 표면이 맡아야 한다. 공통 명령과 정책은 `shared-agent-harness`에 둔다.
+
+그래서 표면을 이렇게 나눴다.
+
+```text
+ai-survival-log       = 개인 학습, 블로그, 개인 Jira PER 추적
+company-wiki          = 회사 Jira KAN 관리 요약과 routing
+shared-agent-harness  = 공통 Jira 명령, guardrail, skill
+```
+
+이 구분이 없으면 자동화는 빨라지는 대신 위험해진다. 개인 학습 주제가 회사 Jira에 들어가거나, 회사 업무 맥락이 개인 블로그 저장소에 섞일 수 있다.
+
+Jira 자동화는 티켓을 만들기 전에 먼저 "어디가 기록의 기준인가"를 정해야 했다.
+
+---
+
+## 내가 고정한 생성 파이프라인은 일곱 단계였다
+
+개인 Jira `PER`에 티켓을 만들 때는 아래 순서를 고정했다.
+
+```text
+summary-only intake
+-> duplicate check
+-> dry-run preview
+-> exact confirmation
+-> apply
+-> execution-note verification
+-> wiki tracking
+```
+
+각 단계에는 이유가 있다.
+
+`summary-only intake`는 원문을 복사하지 않기 위한 단계다. Jira 티켓을 만들기 위해 필요한 최소 요약만 둔다. 회사 원문, credential, source code, SQL, raw payload, private evidence는 넣지 않는다.
+
+`duplicate check`는 자동화의 재실행 위험을 줄인다. 네트워크가 끊겼거나 중간에 결과를 놓치면 같은 티켓을 다시 만들기 쉽다. 그래서 create 전에 Jira에서 비슷한 summary가 있는지 확인한다.
+
+`dry-run preview`는 실제 생성 전에 target site, project key, issue type, summary, description, execution note 경로를 확인하는 단계다. 여기서 틀리면 아직 외부 시스템에는 아무것도 쓰지 않은 상태다.
+
+`exact confirmation`은 마지막 human gate다. 예를 들어 첫 번째 티켓은 이런 확인 문구를 요구했다.
+
+```text
+CREATE PER 작업 노정석 EP 95 DeepSeek-V4 논문 공부 후 블로그 글 작성
+```
+
+이 문구가 preview와 정확히 맞아야만 `apply`를 실행했다. summary가 바뀌거나 issue type이 바뀌면 dry-run부터 다시 해야 한다.
+
+`execution-note verification`은 생성 이후의 audit이다. 생성된 Jira key가 있는지, HTTP 201 created가 맞는지, summary가 의도한 값인지, token 값과 raw Jira JSON이 저장되지 않았는지 확인한다.
+
+마지막 `wiki tracking`은 내 source of truth를 갱신하는 단계다. Jira key는 dashboard metadata로 남기고, 실제 공부 결과와 블로그 원고는 계속 wiki에 쌓는다.
+
+이 파이프라인 덕분에 자동화는 "바로 실행하는 명령"이 아니라 "실패 조건을 통과해야 실행되는 절차"가 됐다.
+
+---
+
+## PER 티켓 9개는 자동으로 만들었지만 한 번에 믿지는 않았다
+
+실제로 만든 개인 Jira 티켓은 9개였다.
+
+```text
+PER-1  노정석 EP 95 DeepSeek-V4 논문 공부 후 블로그 글 작성
+PER-2  실리콘벨리개발자 레포점수 스킬 확인하기
+PER-3  AI-Native Change Management 결과 확인 후 공부해서 블로그 글 작성
+PER-4  양실장의바이브코딩대학 프론트엔드 백엔드 편 보고 웹기초 블로그 글 작성
+PER-5  프론트엔드 언어별 특징 공부
+PER-6  알고리즘 강의 시청
+PER-7  대규모 시스템 설계 책 읽기
+PER-8  mattpocock 클로드 스킬 분석
+PER-9  주식종목분석에이전트 스킬 분석
+```
+
+여기서 중요한 건 9개를 만들었다는 숫자가 아니다. 2번부터 9번까지 이어서 create하겠다고 승인한 뒤에도, 각 티켓은 자기 차례에 duplicate check와 dry-run preview를 거쳤다.
+
+batch 승인은 gate를 생략한다는 뜻이 아니었다.
+
+각 항목마다 임시 intake를 만들고, `Matches: none`을 확인하고, preview의 confirmation string을 기준으로 apply했다. 중간에 duplicate가 나오거나 Jira create가 실패하면 멈추는 구조였다.
+
+작은 실수도 있었다. 첫 번째 티켓 제목에서 `노정성`이라고 잘못 적은 부분을 `노정석`으로 고쳤다. 이때도 바로 apply하지 않았다. summary를 수정하고, duplicate check와 dry-run preview를 다시 실행한 뒤 confirmation을 새로 만들었다.
+
+자동화는 빠르게 처리하는 도구지만, 빠르게 틀리는 도구가 되면 의미가 없다. 그래서 내가 믿은 것은 batch 실행이 아니라 각 티켓마다 반복된 gate였다.
+
+---
+
+## dry-run은 친절한 미리보기가 아니라 마지막 브레이크였다
+
+처음에는 dry-run을 단순 미리보기 정도로 생각하기 쉽다. 하지만 Jira create에서 dry-run은 마지막 브레이크에 가깝다.
+
+Jira 티켓 생성에는 생각보다 많은 필드가 얽힌다.
+
+- Atlassian site
+- project key
+- issue type
+- summary
+- description
+- labels
+- components
+- parent issue
+- execution note path
+- credential source
+
+이 중 하나만 틀려도 문제의 성격이 달라진다. `PER`에 만들 개인 티켓이 `KAN`에 들어가면 경계 사고가 된다. issue type이 잘못되면 API가 실패하거나 보드 운영이 꼬인다. execution note에 raw payload가 남으면 보안과 retention 문제가 된다.
+
+그래서 dry-run에서 봐야 하는 것은 "잘 나왔네"가 아니다.
+
+```text
+이 티켓이 정말 이 프로젝트에 만들어져도 되는가?
+이 issue type이 Jira가 실제로 받는 값인가?
+중복 티켓은 없는가?
+description에 넣으면 안 되는 정보가 섞이지 않았는가?
+실행 기록은 임시 artifact 경로에만 남는가?
+```
+
+이 질문을 통과한 뒤에야 exact confirmation이 의미를 가진다. confirmation은 사용자의 의지를 묻는 문구가 아니라, preview된 생성 내용과 apply 명령을 서로 묶는 장치다.
+
+자동화에서 "확인했습니다"는 너무 약하다. 무엇을 확인했는지 문자열로 고정해야 한다.
+
+---
+
+## 회사 Jira에는 같은 규칙을 그대로 가져가면 안 됐다
+
+개인 `PER` 티켓 생성이 성공했다고 해서 회사 `KAN` 자동화까지 같은 승인으로 밀어붙일 수는 없었다.
+
+개인 Jira create와 회사 Jira write는 위험 등급이 다르다. 특히 회사 쪽에서는 create, comment, status transition, field mutation, attachment handling을 같은 종류의 작업으로 보면 안 된다.
+
+예를 들어 comment는 외부 협업 표면에 문장을 남긴다. status transition은 workflow 상태를 바꾼다. field mutation은 routing, priority, ownership, due date 같은 운영 metadata를 바꿀 수 있다. attachment는 원문과 private payload 위험이 훨씬 크다.
+
+그래서 회사 Jira 자동화 쪽에서는 profile과 gate를 더 강하게 나눴다.
+
+```text
+personal-jira       = 개인 작업
+company-jira        = 회사 작업
+needs-classification = 분류가 애매하므로 block
+```
+
+`needs-classification`은 단순 경고가 아니라 hard block이어야 했다. 개인 작업인지 회사 작업인지 애매한 상태에서 Jira API credential을 꺼내거나 durable record를 만들면 안 된다.
+
+그리고 Jira status도 조심해야 했다. Jira에서 Done처럼 보이는 상태가 wiki에서 완료 증거가 되는 것은 아니다. Jira status는 dashboard metadata일 뿐이고, 실제 완료 근거는 wiki나 승인된 audit surface에 남아야 한다.
+
+이 판단 덕분에 개인 자동화 실습은 회사 자동화의 위험을 줄이는 예행연습이 됐다. 단, 개인 승인 규칙을 회사 승인 규칙으로 착각하지 않는다는 전제가 붙었다.
+
+---
+
+## 성공한 명령을 스킬로 남기면서 구조가 더 분명해졌다
+
+티켓을 9개 만들고 나서 남은 질문은 이것이었다.
+
+> 이 절차를 다음에도 똑같이 재현하려면 어디에 남겨야 하는가?
+
+처음에는 두 개의 skill을 모두 `ai-survival-log` 안에 만들었다.
+
+- `jira-per-ticket-auto-create`
+- `jira-ticket-create`
+
+그런데 다시 보니 위치가 같으면 안 됐다.
+
+`jira-per-ticket-auto-create`는 개인 Jira `PER` 전용이다. 개인 학습, 개인 블로그, 개인 tooling 티켓을 summary-only intake에서 시작해 duplicate check, dry-run, apply, wiki tracking까지 처리한다. 그러니 `ai-survival-log`에 있는 것이 맞다.
+
+반면 `jira-ticket-create`는 개인과 회사에서 모두 쓸 수 있는 공통 단건 create workflow다. 이 스킬은 `PER`에도 쓸 수 있고, 승인된 회사 create gate에서도 쓸 수 있다. 그러면 개인 위키가 canonical 위치가 되면 안 된다.
+
+최종 위치는 이렇게 정리했다.
+
+```text
+ai-survival-log/.codex/skills/jira-per-ticket-auto-create
+shared-agent-harness/skills/jira-ticket-create
+```
+
+이 결정이 중요했다. 스킬화는 성공한 명령어를 메모장에 저장하는 일이 아니다. 그 절차의 소유권과 사용 범위를 정하는 일이다.
+
+개인 전용 자동화는 개인 위키에 둔다. 개인과 회사가 함께 쓰는 공통 workflow는 shared harness에 둔다. 회사 운영 기록은 company-wiki와 승인된 audit surface가 맡는다.
+
+자동화는 코드보다 위치에서 먼저 틀어질 수 있다는 걸 이 단계에서 배웠다.
+
+---
+
+## 이번 실습의 결론은 빠른 생성이 아니었다
+
+이번 실습에서 Jira 티켓 9개를 만들었다. 하지만 이 글의 결론은 "Jira API로 티켓을 자동 생성했다"가 아니다.
+
+진짜 결론은 이쪽이다.
+
+- 인증 확인은 project 권한 확인보다 먼저다.
+- Jira는 source of truth가 아니라 dashboard/task surface다.
+- summary-only intake는 원문과 private payload를 막기 위한 최소 단위다.
+- duplicate check는 자동화 재실행의 피해를 줄인다.
+- dry-run은 미리보기가 아니라 외부 write 직전의 브레이크다.
+- exact confirmation은 사람의 승인을 preview와 묶는 장치다.
+- 개인 Jira와 회사 Jira는 profile과 gate를 분리해야 한다.
+- 성공한 절차는 skill로 남기되, canonical 위치를 잘못 잡으면 다시 위험해진다.
+
+개발자 자동화라고 하면 빨리 처리하는 기술처럼 보인다. 그런데 실제로 반복 가능한 자동화를 만들려면 빨리 실행하는 능력보다 안전하게 멈추는 능력이 먼저 필요했다.
+
+Jira API 호출은 작은 부분이었다.
+
+이번 실습의 본체는 티켓 생성 명령이 아니라, 그 명령이 실행되기 전에 반드시 통과해야 하는 안전장치였다.
+
+## 함께 읽으면 좋은 글
+
+- [개인 Jira와 회사 Jira 자동화 분리 설계](/posts/2026-04-29-developer-automation-lab-03-jira-profile-boundary)
+- [개발자 자동화 실습 01 — PR summary를 직접 만들고 실제 PR에서 확인했다](/posts/2026-04-17-developer-automation-lab-01-pr-summary)
+- [Claude로 계획하고 Codex로 검증하는 저장소 구조 리팩토링](/posts/2026-04-18-claude-plan-codex-validate)
+- [shared-agent-harness 분리와 5개 프로젝트 구조](/posts/2026-04-25-agent-harness-notes-02-detached-workspace)
