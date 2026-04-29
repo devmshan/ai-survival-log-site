@@ -97,6 +97,15 @@ Detailed rules should live outside those top-level files:
 - UI and content operations in `docs/operating/*`
 - long-lived design decisions in `docs/adr/`
 
+## AI-Native Local Gate
+
+This repository adopts the shared AI-Native Change Management standard through local operating docs:
+
+- `docs/operating/ai-ready-context-map.md`
+- `docs/operating/ai-native-local-gates.md`
+
+The local gate keeps the site as a downstream consumer, preserves runtime/content contracts, and uses deterministic state export for generated diff checks.
+
 ## Contract Severity
 
 Use these policy levels when evaluating changes:
@@ -128,6 +137,7 @@ Rules:
 - never store secrets, tokens, env values, personal data, or absolute local paths
 - if JSON conflicts with runtime content or docs, contract/rule sources win
 - keep tracked JSON stable, reviewable, and deterministic
+- set `STATE_GENERATED_AT` in CI so generated state can be diff-checked
 - preserve field naming and ordering unless a deliberate schema change is approved
 - require a documented review for breaking schema changes that affect automation or docs
 
@@ -150,5 +160,7 @@ npm run state
 - [CLAUDE.md](/Users/ms/workspace/claude/ai-survival-log-site/CLAUDE.md)
 - [docs/operating/ui-guide.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/ui-guide.md)
 - [docs/operating/content-contract.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/content-contract.md)
+- [docs/operating/ai-ready-context-map.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/ai-ready-context-map.md)
+- [docs/operating/ai-native-local-gates.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/ai-native-local-gates.md)
 - [docs/operating/seo-operations.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/seo-operations.md)
 - [docs/operating/consumer-boundaries.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/consumer-boundaries.md)

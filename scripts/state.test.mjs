@@ -8,6 +8,7 @@ import {
   exportContentInventory,
   exportSeriesManifest,
   main,
+  nowIso,
   readPost,
 } from './state'
 
@@ -32,6 +33,21 @@ afterEach(() => {
 })
 
 describe('state export', () => {
+  it('uses STATE_GENERATED_AT when provided', () => {
+    const original = process.env.STATE_GENERATED_AT
+    process.env.STATE_GENERATED_AT = '1970-01-01T00:00:00.000Z'
+
+    try {
+      expect(nowIso()).toBe('1970-01-01T00:00:00.000Z')
+    } finally {
+      if (original === undefined) {
+        delete process.env.STATE_GENERATED_AT
+      } else {
+        process.env.STATE_GENERATED_AT = original
+      }
+    }
+  })
+
   it('writes content inventory entries', () => {
     const root = makeTempDir()
     const postsDir = path.join(root, 'content', 'posts')

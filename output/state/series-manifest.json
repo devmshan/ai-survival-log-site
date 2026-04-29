@@ -1,8 +1,26 @@
 {
-  "generatedAt": "2026-04-23T14:49:29.288Z",
+  "generatedAt": "1970-01-01T00:00:00.000Z",
   "source": "content/posts",
-  "totalSeries": 4,
+  "totalSeries": 5,
   "entries": [
+    {
+      "seriesSlug": "agent-harness-notes",
+      "series": "Agent Harness Notes",
+      "posts": [
+        {
+          "slug": "2026-04-24-agent-harness-notes-01-dual-domain",
+          "title": "Agent Harness Notes 01 — Managed Agents를 공부하다가, 왜 개인/회사 이중 도메인 하네스를 설계하게 됐나",
+          "date": "2026-04-24",
+          "seriesOrder": 1
+        },
+        {
+          "slug": "2026-04-25-agent-harness-notes-02-detached-workspace",
+          "title": "Agent Harness Notes 02 — 왜 shared-agent-harness를 떼고, 5개 프로젝트 구조로 갔는가",
+          "date": "2026-04-25",
+          "seriesOrder": 2
+        }
+      ]
+    },
     {
       "seriesSlug": "claude-codex-ops",
       "series": "Claude Code × Codex 실전기",
@@ -34,14 +52,26 @@
       ]
     },
     {
-      "seriesSlug": "how-llm-works",
-      "series": "도서관과 교수님의 뇌 — LLM 작동 원리",
+      "seriesSlug": "professors-brain",
+      "series": "도서관과 교수님의 뇌",
       "posts": [
         {
-          "slug": "2026-04-14-how-llm-works-01",
-          "title": "LLM은 어떻게 기억하고 답하는가 — 파라미터와 임베딩",
+          "slug": "2026-04-14-professors-brain-01-how-llm-works",
+          "title": "도서관과 교수님의 뇌 01 — LLM은 어떻게 기억하고 답하는가",
           "date": "2026-04-14",
           "seriesOrder": 1
+        },
+        {
+          "slug": "2026-04-24-professors-brain-02-relearning-llm",
+          "title": "도서관과 교수님의 뇌 02 — Anthropic을 따라가다 다시 LLM을 공부하게 된 이유",
+          "date": "2026-04-24",
+          "seriesOrder": 2
+        },
+        {
+          "slug": "2026-04-24-professors-brain-03-closing-the-loop",
+          "title": "도서관과 교수님의 뇌 03 — AI가 루프를 닫는다는 것, Claude Design에서 AI for Science까지",
+          "date": "2026-04-24",
+          "seriesOrder": 3
         }
       ]
     },

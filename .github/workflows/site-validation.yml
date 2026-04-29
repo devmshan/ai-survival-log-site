@@ -1,0 +1,43 @@
+name: Site Validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  site-validation:
+    runs-on: ubuntu-latest
+    env:
+      STATE_GENERATED_AT: "1970-01-01T00:00:00.000Z"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Export derived state
+        run: npm run state
+
+      - name: Build
+        run: npm run build
+
+      - name: Check generated diffs
+        run: git diff --exit-code
