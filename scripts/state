@@ -13,6 +13,9 @@ const OUTPUT_STATE_DIR = path.join(PROJECT_ROOT, 'output', 'state')
 const REQUIRED_FIELDS = ['title', 'date', 'tags', 'description', 'draft']
 
 export function nowIso() {
+  if (process.env.STATE_GENERATED_AT) {
+    return process.env.STATE_GENERATED_AT
+  }
   return new Date().toISOString()
 }
 

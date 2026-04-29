@@ -136,6 +136,30 @@ Typical severity:
 - contradictory cross-surface rules: `block`
 - intentional divergence between Claude and Codex guidance: `escalate`
 
+### AI-Native Local Gate Adoption
+
+Examples:
+
+- `docs/operating/ai-ready-context-map.md`
+- `docs/operating/ai-native-local-gates.md`
+- CI workflow that runs lint, tests, deterministic state export, build, and generated diff checks
+- repository-specific deny-list or director gate criteria
+
+Required checks:
+
+- `npm run lint`
+- `npm test`
+- `STATE_GENERATED_AT=1970-01-01T00:00:00.000Z npm run state`
+- `npm run build`
+- review generated diffs, especially `.github/workflows/*`, `docs/operating/*`, `scripts/state`, and `output/state/*.json`
+
+Typical severity:
+
+- local context map or gate wording improvement with no rule drift: `warn`
+- CI that does not check generated diffs after state export: `block`
+- non-deterministic tracked state output: `block`
+- intentional divergence from the shared `shared-agent-harness` standard: `escalate`
+
 ### New Consumer Or Presentation Workflow
 
 Examples:

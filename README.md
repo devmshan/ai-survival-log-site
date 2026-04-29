@@ -43,6 +43,8 @@ Optional fields:
 
 See [docs/content-contract.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/content-contract.md) for the full contract.
 See [docs/operating/consumer-boundaries.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/consumer-boundaries.md) for rules on adding new downstream consumers.
+See [docs/operating/ai-ready-context-map.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/ai-ready-context-map.md) for the AI-ready repository context map.
+See [docs/operating/ai-native-local-gates.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/operating/ai-native-local-gates.md) for local PR, CI, generated state, and director gate rules.
 See [docs/2026-04-15-final-consistency-review.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/2026-04-15-final-consistency-review.md) for the final cross-repository consistency review.
 
 ## Series Rules

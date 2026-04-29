@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-04-23T14:49:29.272Z",
+  "generatedAt": "1970-01-01T00:00:00.000Z",
   "source": "content/posts",
-  "totalPosts": 12,
+  "totalPosts": 17,
   "entries": [
     {
       "slug": "2026-04-09-ecc-complete-guide",
@@ -81,19 +81,22 @@
       "hasThumbnail": false
     },
     {
-      "slug": "2026-04-14-how-llm-works-01",
-      "path": "content/posts/2026-04-14-how-llm-works-01.mdx",
-      "title": "LLM은 어떻게 기억하고 답하는가 — 파라미터와 임베딩",
+      "slug": "2026-04-14-professors-brain-01-how-llm-works",
+      "path": "content/posts/2026-04-14-professors-brain-01-how-llm-works.mdx",
+      "title": "도서관과 교수님의 뇌 01 — LLM은 어떻게 기억하고 답하는가",
       "date": "2026-04-14",
       "draft": false,
       "tags": [
         "llm",
         "embedding",
-        "ai-architecture"
+        "ai-architecture",
+        "parameters",
+        "study",
+        "anthropic"
       ],
-      "description": "LLM은 Vector DB로 검색하지 않는다. 파라미터에 압축된 패턴과 임베딩의 세 가지 의미를 도서관 비유로 풀어낸다.",
-      "series": "도서관과 교수님의 뇌 — LLM 작동 원리",
-      "seriesSlug": "how-llm-works",
+      "description": "LLM은 Vector DB로 검색하지 않는다. 파라미터에 압축된 패턴과 임베딩의 세 가지 의미를 도서관 비유로 풀어낸 시리즈 1편.",
+      "series": "도서관과 교수님의 뇌",
+      "seriesSlug": "professors-brain",
       "seriesOrder": 1,
       "hasThumbnail": false
     },
@@ -209,6 +212,108 @@
         "obsidian-web-clipper"
       ],
       "description": "Graphify를 잘못된 명령으로 테스트해서 틀린 결론을 냈다. 다시 확인했더니 마크다운도 처리된다. 그래도 지금 이 위키에는 안 쓴다 — 이유는 '못 해서'가 아니라 '지금은 필요 없어서'.",
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-24-agent-harness-notes-01-dual-domain",
+      "path": "content/posts/2026-04-24-agent-harness-notes-01-dual-domain.mdx",
+      "title": "Agent Harness Notes 01 — Managed Agents를 공부하다가, 왜 개인/회사 이중 도메인 하네스를 설계하게 됐나",
+      "date": "2026-04-24",
+      "draft": false,
+      "tags": [
+        "agent-harness",
+        "managed-agents",
+        "dual-domain",
+        "workspace-structure",
+        "security-boundary",
+        "claude",
+        "operations"
+      ],
+      "description": "Scaling Managed Agents를 공부하다가 agent 수가 아니라 brain과 hand, 개인과 회사 도메인을 먼저 분리해야 한다는 결론에 도달한 설계 기록. role/lane is shared, data/surface is isolated가 나온 맥락.",
+      "series": "Agent Harness Notes",
+      "seriesSlug": "agent-harness-notes",
+      "seriesOrder": 1,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-24-learning-my-own-taste-on-frontier",
+      "path": "content/posts/2026-04-24-learning-my-own-taste-on-frontier.mdx",
+      "title": "프론티어를 따라가며 내 취향을 학습시키는 일",
+      "date": "2026-04-24",
+      "draft": false,
+      "tags": [
+        "capability-overhang",
+        "attention-business",
+        "frontier",
+        "taste",
+        "lm-head",
+        "personal-strategy",
+        "essay"
+      ],
+      "description": "프론티어 모델을 따라가는 감각이 흔들릴 때 남는 두 갈래 도망길을 정리하고, 그 비교 끝에 attention business 시대에는 취향과 선택의 누적이 결국 나의 LM head가 되어 나의 출력이 된다는 자기 해석을 남긴 에세이.",
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-24-professors-brain-02-relearning-llm",
+      "path": "content/posts/2026-04-24-professors-brain-02-relearning-llm.mdx",
+      "title": "도서관과 교수님의 뇌 02 — Anthropic을 따라가다 다시 LLM을 공부하게 된 이유",
+      "date": "2026-04-24",
+      "draft": false,
+      "tags": [
+        "llm",
+        "tokenizer",
+        "kv-cache",
+        "lm-head",
+        "anthropic",
+        "study",
+        "ai-architecture"
+      ],
+      "description": "Claude 구독비 문제로 Anthropic 방향성을 파악하다가 Mythos 10T 루머를 만났고, 그 질문 하나가 tokenizer, LM head, KV cache까지 이어졌다. 공부하게 된 계기와 LLM 내부 파이프라인을 서사로 따라간 기록.",
+      "series": "도서관과 교수님의 뇌",
+      "seriesSlug": "professors-brain",
+      "seriesOrder": 2,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-24-professors-brain-03-closing-the-loop",
+      "path": "content/posts/2026-04-24-professors-brain-03-closing-the-loop.mdx",
+      "title": "도서관과 교수님의 뇌 03 — AI가 루프를 닫는다는 것, Claude Design에서 AI for Science까지",
+      "date": "2026-04-24",
+      "draft": false,
+      "tags": [
+        "llm",
+        "claude-design",
+        "ai-for-science",
+        "feedback-loop",
+        "personalized-medicine",
+        "anthropic",
+        "study"
+      ],
+      "description": "Claude Design이 프론트엔드 피드백 루프를 닫은 것처럼, AI for Science는 데이터-해석-설계-적용 루프를 닫는다. 두 사례에서 공통 구조를 읽는 기록.",
+      "series": "도서관과 교수님의 뇌",
+      "seriesSlug": "professors-brain",
+      "seriesOrder": 3,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-25-agent-harness-notes-02-detached-workspace",
+      "path": "content/posts/2026-04-25-agent-harness-notes-02-detached-workspace.mdx",
+      "title": "Agent Harness Notes 02 — 왜 shared-agent-harness를 떼고, 5개 프로젝트 구조로 갔는가",
+      "date": "2026-04-25",
+      "draft": false,
+      "tags": [
+        "agent-harness",
+        "shared-agent-harness",
+        "detached-workspace",
+        "company-wiki",
+        "company-assistant-ops",
+        "operations",
+        "workspace-structure"
+      ],
+      "description": "개인 도메인과 회사 도메인을 실제로 분리하면서 왜 5개 저장소 구조(ai-survival-log, ai-survival-log-site, company-wiki, company-assistant-ops, shared-agent-harness)로 갔는지, 폴더 분리 이후 operational source와 history source를 나눠 참조 방향을 고정한 과정을 정리한다.",
+      "series": "Agent Harness Notes",
+      "seriesSlug": "agent-harness-notes",
+      "seriesOrder": 2,
       "hasThumbnail": false
     }
   ]
