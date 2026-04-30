@@ -48,6 +48,18 @@
           "title": "개발자 자동화 실습 01 — PR summary를 직접 만들고 실제 PR에서 확인했다",
           "date": "2026-04-17",
           "seriesOrder": 1
+        },
+        {
+          "slug": "2026-04-29-developer-automation-lab-02-jira-ticket-automation",
+          "title": "개발자 자동화 실습 02 — Jira 티켓 자동화는 API 호출이 아니라 안전장치 설계다",
+          "date": "2026-04-29",
+          "seriesOrder": 2
+        },
+        {
+          "slug": "2026-04-29-developer-automation-lab-03-jira-profile-boundary",
+          "title": "개발자 자동화 실습 03 — 개인 Jira와 회사 Jira를 한 도구로 다루되 섞지 않는 법",
+          "date": "2026-04-29",
+          "seriesOrder": 3
         }
       ]
     },
