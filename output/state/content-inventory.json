@@ -1,7 +1,7 @@
 {
   "generatedAt": "1970-01-01T00:00:00.000Z",
   "source": "content/posts",
-  "totalPosts": 17,
+  "totalPosts": 19,
   "entries": [
     {
       "slug": "2026-04-09-ecc-complete-guide",
@@ -248,7 +248,8 @@
         "taste",
         "lm-head",
         "personal-strategy",
-        "essay"
+        "essay",
+        "codex"
       ],
       "description": "프론티어 모델을 따라가는 감각이 흔들릴 때 남는 두 갈래 도망길을 정리하고, 그 비교 끝에 attention business 시대에는 취향과 선택의 누적이 결국 나의 LM head가 되어 나의 출력이 된다는 자기 해석을 남긴 에세이.",
       "hasThumbnail": false
@@ -314,6 +315,47 @@
       "series": "Agent Harness Notes",
       "seriesSlug": "agent-harness-notes",
       "seriesOrder": 2,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-29-developer-automation-lab-02-jira-ticket-automation",
+      "path": "content/posts/2026-04-29-developer-automation-lab-02-jira-ticket-automation.mdx",
+      "title": "개발자 자동화 실습 02 — Jira 티켓 자동화는 API 호출이 아니라 안전장치 설계다",
+      "date": "2026-04-29",
+      "draft": false,
+      "tags": [
+        "automation",
+        "jira",
+        "codex",
+        "workflow",
+        "developer",
+        "study"
+      ],
+      "description": "Jira API로 티켓을 자동 생성하기 전에 인증, 프로젝트 경계, 중복 확인, dry-run, exact confirmation, 실행 기록 검증을 어떻게 설계했는지 PER 티켓 9개 생성 실습과 스킬화 과정을 정리한다.",
+      "series": "개발자 자동화 실습",
+      "seriesSlug": "developer-automation-lab",
+      "seriesOrder": 2,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-04-29-developer-automation-lab-03-jira-profile-boundary",
+      "path": "content/posts/2026-04-29-developer-automation-lab-03-jira-profile-boundary.mdx",
+      "title": "개발자 자동화 실습 03 — 개인 Jira와 회사 Jira를 한 도구로 다루되 섞지 않는 법",
+      "date": "2026-04-29",
+      "draft": false,
+      "tags": [
+        "automation",
+        "jira",
+        "codex",
+        "workflow",
+        "developer",
+        "agent-harness",
+        "company-wiki"
+      ],
+      "description": "개인 Jira PER와 회사 Jira KAN을 같은 자동화 도구로 다루면서도 섞지 않기 위해 personal-jira, company-jira, needs-classification profile과 shared-agent-harness skill 위치를 어떻게 나눴는지 정리한다.",
+      "series": "개발자 자동화 실습",
+      "seriesSlug": "developer-automation-lab",
+      "seriesOrder": 3,
       "hasThumbnail": false
     }
   ]
