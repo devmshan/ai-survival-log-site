@@ -1,7 +1,8 @@
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { getAllTags, getPostsByTag } from '@/lib/posts'
 import { PostList } from '@/components/post/PostList'
 import { TagFilter } from '@/components/post/TagFilter'
+import { getCanonicalTag, getTagHref } from '@/lib/tag-navigation'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 
@@ -25,10 +26,11 @@ function safeDecodeTag(raw: string): string | null {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tag } = await params
   const decodedTag = safeDecodeTag(tag) ?? tag
-  const encodedTag = encodeURIComponent(decodedTag)
+  const canonicalTag = getCanonicalTag(decodedTag)
+  const encodedTag = encodeURIComponent(canonicalTag)
   return {
-    title: `#${decodedTag}`,
-    description: `${decodedTag} 태그로 분류된 글 목록`,
+    title: `#${canonicalTag}`,
+    description: `${canonicalTag} 태그로 분류된 글 목록`,
     alternates: {
       canonical: `/tags/${encodedTag}`,
     },
@@ -40,9 +42,12 @@ export default async function TagPage({ params }: Props) {
   const decodedTag = safeDecodeTag(tag)
   const allTags = getAllTags()
 
-  if (!decodedTag || !allTags.includes(decodedTag)) notFound()
+  if (!decodedTag) notFound()
+  const canonicalTag = getCanonicalTag(decodedTag)
+  if (canonicalTag !== decodedTag) permanentRedirect(getTagHref(canonicalTag))
+  if (!allTags.includes(canonicalTag)) notFound()
 
-  const posts = getPostsByTag(decodedTag)
+  const posts = getPostsByTag(canonicalTag)
 
   return (
     <div>

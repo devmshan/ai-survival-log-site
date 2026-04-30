@@ -24,6 +24,11 @@ Preserve:
 - `description`
 - `draft`
 
+Tag rules:
+
+- tool and product tags use canonical tag ids rather than display labels
+- use `claude-code` for Claude Code posts; `Claude Code` is allowed in prose, titles, and link text only
+
 Optional fields:
 
 - `thumbnail`

@@ -141,6 +141,35 @@ series: Broken Series
     expect(payload.warnings[0].code).toBe('missing-series-slug')
   })
 
+  it('reports non-canonical tag aliases', () => {
+    const root = makeTempDir()
+    const postsDir = path.join(root, 'content', 'posts')
+    const outputDir = path.join(root, 'output', 'state')
+    fs.mkdirSync(postsDir, { recursive: true })
+
+    writePost(postsDir, 'tagged-post.mdx', `---
+title: Tagged
+date: 2026-04-01
+tags: ["Claude Code"]
+description: Tagged description
+draft: false
+---
+# Tagged
+`)
+
+    const posts = [readPost(path.join(postsDir, 'tagged-post.mdx'), root)]
+    const outputPath = exportContentContractSummary(posts, outputDir)
+    const payload = JSON.parse(fs.readFileSync(outputPath, 'utf-8'))
+
+    expect(payload.valid).toBe(false)
+    expect(payload.tagErrorCount).toBe(1)
+    expect(payload.tagErrors[0]).toEqual({
+      path: 'content/posts/tagged-post.mdx',
+      tag: 'Claude Code',
+      canonicalTag: 'claude-code',
+    })
+  })
+
   it('returns 1 when --only is missing a value', () => {
     const originalArgv = process.argv
     process.argv = ['node', 'scripts/state', '--only']

@@ -6,9 +6,11 @@
   "publishedPosts": 19,
   "missingRequiredCount": 0,
   "typeErrorCount": 0,
+  "tagErrorCount": 0,
   "warningCount": 0,
   "missingRequired": [],
   "typeErrors": [],
+  "tagErrors": [],
   "warnings": [],
   "valid": true
 }
