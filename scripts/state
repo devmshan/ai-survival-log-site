@@ -11,6 +11,9 @@ const PROJECT_ROOT = path.resolve(__dirname, '..')
 const POSTS_DIR = path.join(PROJECT_ROOT, 'content', 'posts')
 const OUTPUT_STATE_DIR = path.join(PROJECT_ROOT, 'output', 'state')
 const REQUIRED_FIELDS = ['title', 'date', 'tags', 'description', 'draft']
+const DISALLOWED_TAG_ALIASES = new Map([
+  ['Claude Code', 'claude-code'],
+])
 
 export function nowIso() {
   if (process.env.STATE_GENERATED_AT) {
@@ -135,6 +138,7 @@ export function exportSeriesManifest(posts, outputDir = OUTPUT_STATE_DIR) {
 export function exportContentContractSummary(posts, outputDir = OUTPUT_STATE_DIR) {
   const missingRequired = []
   const typeErrors = []
+  const tagErrors = []
   const warnings = []
   const nonDraftSeries = new Map()
 
@@ -148,6 +152,14 @@ export function exportContentContractSummary(posts, outputDir = OUTPUT_STATE_DIR
     if ('title' in data && typeof data.title !== 'string') typeErrors.push({ path: relativePath, field: 'title' })
     if ('date' in data && typeof data.date !== 'string') typeErrors.push({ path: relativePath, field: 'date' })
     if ('tags' in data && !Array.isArray(data.tags)) typeErrors.push({ path: relativePath, field: 'tags' })
+    if (Array.isArray(data.tags)) {
+      for (const tag of data.tags) {
+        const canonicalTag = DISALLOWED_TAG_ALIASES.get(tag)
+        if (canonicalTag) {
+          tagErrors.push({ path: relativePath, tag, canonicalTag })
+        }
+      }
+    }
     if ('description' in data && typeof data.description !== 'string') typeErrors.push({ path: relativePath, field: 'description' })
     if ('draft' in data && typeof data.draft !== 'boolean') typeErrors.push({ path: relativePath, field: 'draft' })
     if ('series' in data && typeof data.series !== 'string') typeErrors.push({ path: relativePath, field: 'series' })
@@ -192,11 +204,13 @@ export function exportContentContractSummary(posts, outputDir = OUTPUT_STATE_DIR
     publishedPosts: totalPosts - draftPosts,
     missingRequiredCount: missingRequired.length,
     typeErrorCount: typeErrors.length,
+    tagErrorCount: tagErrors.length,
     warningCount: warnings.length,
     missingRequired,
     typeErrors,
+    tagErrors,
     warnings,
-    valid: missingRequired.length === 0 && typeErrors.length === 0,
+    valid: missingRequired.length === 0 && typeErrors.length === 0 && tagErrors.length === 0,
   }, outputDir)
 }
 

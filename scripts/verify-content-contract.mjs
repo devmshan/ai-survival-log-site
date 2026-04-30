@@ -12,6 +12,9 @@ const __dirname = path.dirname(__filename)
 const PROJECT_ROOT = path.resolve(__dirname, '..')
 const POSTS_DIR = path.join(PROJECT_ROOT, 'content', 'posts')
 const REQUIRED_FIELDS = ['title', 'date', 'tags', 'description', 'draft']
+const DISALLOWED_TAG_ALIASES = new Map([
+  ['Claude Code', 'claude-code'],
+])
 
 function listChangedPostFiles() {
   const statusPath = path.join(PROJECT_ROOT, '.git')
@@ -58,6 +61,14 @@ function validateFile(filePath) {
   }
   if ('tags' in data && !Array.isArray(data.tags)) {
     errors.push(`${relativePath}: "tags" must be an array`)
+  }
+  if (Array.isArray(data.tags)) {
+    for (const tag of data.tags) {
+      const canonicalTag = DISALLOWED_TAG_ALIASES.get(tag)
+      if (canonicalTag) {
+        errors.push(`${relativePath}: tag "${tag}" must be "${canonicalTag}"`)
+      }
+    }
   }
   if ('description' in data && typeof data.description !== 'string') {
     errors.push(`${relativePath}: "description" must be a string`)

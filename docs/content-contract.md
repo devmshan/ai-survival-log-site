@@ -23,6 +23,12 @@ The site may host manually written posts, but the default rule is that posts sho
 - `seriesSlug?: string`
 - `seriesOrder?: number`
 
+## Tag Rules
+
+- Tool and product tags must use canonical tag ids, not display labels.
+- The canonical Claude Code tag is `claude-code`; do not use `Claude Code` in frontmatter tags.
+- Display names such as `Claude Code` may still be used in titles, body copy, and link text.
+
 ## SEO Field Rules
 
 - `thumbnail` is the representative image field currently reused by both post cards and social preview metadata

@@ -7,6 +7,7 @@ const tags = [
   'AI',
   'agent-harness',
   'automation',
+  'claude-code',
   'codex',
   'developer',
   'graphify',
@@ -21,6 +22,7 @@ describe('TagFilter', () => {
 
     const featuredTags = screen.getByRole('group', { name: '대표 태그' })
     expect(within(featuredTags).getByRole('link', { name: '전체' })).toHaveAttribute('href', '/')
+    expect(within(featuredTags).getByRole('link', { name: 'claude-code' })).toHaveAttribute('href', '/tags/claude-code')
     expect(within(featuredTags).getByRole('link', { name: 'codex' })).toHaveAttribute('href', '/tags/codex')
     expect(within(featuredTags).queryByRole('link', { name: 'graphify' })).not.toBeInTheDocument()
   })
