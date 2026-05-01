@@ -1,7 +1,7 @@
 {
-  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "generatedAt": "2026-05-01T17:11:58.195Z",
   "source": "content/posts",
-  "totalPosts": 19,
+  "totalPosts": 22,
   "entries": [
     {
       "slug": "2026-04-09-ecc-complete-guide",
@@ -136,27 +136,6 @@
       "description": "Claude Code만으로 굴리던 프로젝트에 Codex를 넣으면서, 도구 비교가 아니라 운영 모델 자체를 다시 설계하게 된 과정.",
       "series": "Claude Code × Codex 실전기",
       "seriesSlug": "claude-codex-ops",
-      "seriesOrder": 1,
-      "hasThumbnail": false
-    },
-    {
-      "slug": "2026-04-17-developer-automation-lab-01-pr-summary",
-      "path": "content/posts/2026-04-17-developer-automation-lab-01-pr-summary.mdx",
-      "title": "개발자 자동화 실습 01 — PR summary를 직접 만들고 실제 PR에서 확인했다",
-      "date": "2026-04-17",
-      "draft": false,
-      "tags": [
-        "automation",
-        "pull-request",
-        "workflow",
-        "github",
-        "code-review",
-        "developer",
-        "study"
-      ],
-      "description": "PR summary가 무엇인지 이해하는 데서 시작해, 규칙 기반 자동화를 직접 실습하고 실제 GitHub PR 댓글까지 확인한 기록.",
-      "series": "개발자 자동화 실습",
-      "seriesSlug": "developer-automation-lab",
       "seriesOrder": 1,
       "hasThumbnail": false
     },
@@ -356,6 +335,93 @@
       "series": "개발자 자동화 실습",
       "seriesSlug": "developer-automation-lab",
       "seriesOrder": 3,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-05-02-ai-native-delegator-long-term-plan",
+      "path": "content/posts/2026-05-02-ai-native-delegator-long-term-plan.mdx",
+      "title": "AI와 파트너가 아니라 위임자로 일하기 위해 중장기계획을 만들었다",
+      "date": "2026-05-02",
+      "draft": false,
+      "tags": [
+        "ai-native",
+        "automation",
+        "agent-harness",
+        "planning",
+        "codex",
+        "second-brain",
+        "delegation",
+        "blog"
+      ],
+      "description": "AI와의 관계를 파트너가 아니라 위임자로 재정의하고, 6개 repository 분석, 자동화와 harness, sprint sheet, second brain wiki, 매일 갱신되는 중장기계획을 통해 스스로 진화하는 AI Native 작업 시스템을 만들려는 의도를 정리한 글.",
+      "series": "6개 Repository AI Native 자동화 실습",
+      "seriesSlug": "six-repository-ai-native-automation",
+      "seriesOrder": 1,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-05-02-codex-slack-notify-first-operating-signal",
+      "path": "content/posts/2026-05-02-codex-slack-notify-first-operating-signal.mdx",
+      "title": "위임자가 되려면 Codex 완료 신호부터 받아야 했다",
+      "date": "2026-05-02",
+      "draft": false,
+      "tags": [
+        "codex",
+        "slack",
+        "automation",
+        "ai-native",
+        "planning",
+        "agent-harness",
+        "blog",
+        "delegation"
+      ],
+      "description": "AI에게 일을 위임하려면 먼저 완료 신호와 보고 체계가 필요하다는 관점에서 Codex 작업 완료 Slack 알림을 P0로 올린 이유를 정리한 글.",
+      "series": "6개 Repository AI Native 자동화 실습",
+      "seriesSlug": "six-repository-ai-native-automation",
+      "seriesOrder": 2,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-05-02-codex-task-brief-prompt-writing-lane",
+      "path": "content/posts/2026-05-02-codex-task-brief-prompt-writing-lane.mdx",
+      "title": "프롬프트를 잘 쓰려다 Codex task brief를 만들게 됐다",
+      "date": "2026-05-02",
+      "draft": false,
+      "tags": [
+        "codex",
+        "prompt-engineering",
+        "ai-native",
+        "automation",
+        "agent-harness",
+        "delegation",
+        "blog"
+      ],
+      "description": "AI에게 일을 위임하기 위해 프롬프트를 문장 작성이 아니라 Codex task brief라는 작업 인수인계 양식으로 바꾸고, Slack notify 사례를 통해 목표·맥락·제약·검증·산출물을 고정한 이유를 정리한 글.",
+      "series": "6개 Repository AI Native 자동화 실습",
+      "seriesSlug": "six-repository-ai-native-automation",
+      "seriesOrder": 3,
+      "hasThumbnail": false
+    },
+    {
+      "slug": "2026-05-02-developer-automation-lab-01-pr-summary",
+      "path": "content/posts/2026-05-02-developer-automation-lab-01-pr-summary.mdx",
+      "title": "개발자 자동화 실습 01 — PR summary를 직접 만들고 실제 PR에서 확인했다",
+      "date": "2026-05-02",
+      "draft": false,
+      "tags": [
+        "automation",
+        "pull-request",
+        "workflow",
+        "github",
+        "code-review",
+        "developer",
+        "study",
+        "finsight"
+      ],
+      "description": "PR summary가 무엇인지 이해하는 데서 시작해, 규칙 기반 자동화를 직접 실습하고 실제 GitHub PR 댓글까지 확인한 기록.",
+      "series": "개발자 자동화 실습",
+      "seriesSlug": "developer-automation-lab",
+      "seriesOrder": 1,
       "hasThumbnail": false
     }
   ]
