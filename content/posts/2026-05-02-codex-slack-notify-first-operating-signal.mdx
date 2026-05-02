@@ -1,0 +1,161 @@
+---
+title: "위임자가 되려면 Codex 완료 신호부터 받아야 했다"
+seoTitle: "Codex Slack 알림을 먼저 붙인 이유 — AI 자동화 병렬 작업의 완료 신호"
+date: "2026-05-02"
+tags: ["codex", "slack", "automation", "ai-native", "planning", "agent-harness", "blog", "delegation"]
+description: "AI에게 일을 위임하려면 먼저 완료 신호와 보고 체계가 필요하다는 관점에서 Codex 작업 완료 Slack 알림을 P0로 올린 이유를 정리한 글."
+draft: false
+series: "6개 Repository AI Native 자동화 실습"
+seriesSlug: "six-repository-ai-native-automation"
+seriesOrder: 2
+---
+
+1편에서는 AI와의 관계를 파트너가 아니라 위임자로 다시 정의했다.
+
+그 관점에서 보면, 다음 질문은 자연스럽다.
+
+> 위임자가 가장 먼저 만들어야 하는 운영 장치는 무엇일까?
+
+처음에는 회귀 테스트 실패 분석 봇이나 PR summary 고도화처럼 더 커 보이는 작업을 먼저 해야 할 것 같았다. 실제로 둘 다 중요하다. 하지만 중장기계획을 sprint sheet처럼 관리하고, 하루에 2~3개 작업을 병렬로 돌리려면 더 앞에 필요한 것이 있었다.
+
+작업이 끝났다는 신호.
+
+그래서 `Codex 완료 Slack 알림 설정`을 최우선 P0로 올렸다.
+
+## 완료 신호가 없으면 위임은 다시 감시가 된다
+
+한 작업만 할 때는 알림이 없어도 괜찮다.
+
+Codex가 끝날 때까지 기다리면 되고, 결과를 읽고 다음 일을 하면 된다. 하지만 병렬 작업을 시작하면 상황이 달라진다. 문서 초안을 만들고, 로컬 설정을 바꾸고, 다른 repository의 계획을 읽는 일이 동시에 열린다.
+
+이때 완료 신호가 없으면 위임은 다시 감시가 된다.
+
+- 어떤 작업이 끝났는지 계속 확인해야 한다.
+- 어떤 작업이 dry-run까지만 됐는지 기억해야 한다.
+- 어떤 작업은 secret이 없어서 실제 전송을 못 했는지 따로 추적해야 한다.
+- 어떤 작업은 중장기계획에 반영해야 하는지 다시 찾아야 한다.
+
+이건 위임이 아니다.
+
+그냥 대화창과 터미널을 계속 지켜보는 일에 가깝다.
+
+위임자가 되려면 결과를 기다리는 구조가 필요하다. 그래서 완료 신호는 사소한 편의 기능이 아니라 운영 조건이 됐다.
+
+## 작은 알림에도 좋은 작업 지시의 조건이 다 들어 있었다
+
+Slack 알림 작업은 프롬프트 작성 실습으로도 좋았다.
+
+단순한 요청은 이렇게 쓸 수 있다.
+
+```text
+Codex 작업이 끝나면 Slack으로 알려줘.
+```
+
+하지만 실제 작업으로 바꾸면 곧바로 질문이 늘어난다.
+
+- Codex의 어떤 lifecycle 표면을 쓸 것인가?
+- Slack webhook secret은 어디에 둘 것인가?
+- 회사 repository에서도 같은 알림을 받을 것인가?
+- Slack payload에 assistant 답변 본문을 넣을 것인가?
+- webhook이 없을 때 검증은 어떻게 할 것인가?
+
+이 질문들은 프롬프트가 부실해서 생긴 문제가 아니다. 작업 자체가 가진 경계다.
+
+그래서 codex prompt writing study plan의 `Codex task brief` 구조가 필요했다.
+
+```text
+목표:
+- Codex 작업 완료 이벤트를 Slack으로 알립니다.
+
+대상:
+- ai-survival-log
+- ai-survival-log-site
+- shared-agent-harness
+- company* repository
+
+제약:
+- Slack webhook URL, token, credential은 repo 파일에 저장하지 않습니다.
+- 회사 원문, source trace, DB 정보, 검수 증적, assistant 답변 본문은 Slack payload에 넣지 않습니다.
+- 실제 전송은 webhook secret이 준비된 뒤에만 검증합니다.
+
+검증:
+- syntax check
+- dry-run payload 확인
+- secret pattern scan
+- Codex config의 notify 설정 확인
+```
+
+좋은 작업 지시는 "무엇을 해줘"에서 멈추지 않는다. 어디까지 해도 되는지, 무엇을 보내면 안 되는지, 어떤 검증으로 끝낼지를 같이 정한다.
+
+## Slack payload는 작아야 보고 체계로 오래 쓸 수 있다
+
+처음에는 Slack에 많은 정보를 보내고 싶어진다.
+
+마지막 assistant 답변, 변경 파일 목록, 실패 로그, 상세 요약까지 보내면 편해 보인다. 하지만 기본값은 작아야 한다.
+
+이번 설계의 기본 payload는 프로젝트명, 상대 디렉터리, 이벤트, 모델, 짧은 session/turn ID 정도로 제한했다. 사용자 프롬프트와 assistant 답변 본문은 기본으로 보내지 않는다. 회사 원문, source trace, DB 정보, review/test evidence도 보내지 않는다.
+
+이 선택은 보수적이지만 오래 간다.
+
+Slack은 source-of-truth가 아니다. Slack은 상태 신호다. 상세 내용은 각 repository와 wiki, PR, 검증 기록에 남아야 한다.
+
+알림은 "끝났다"를 알려 주고, 판단과 기록은 원래 있어야 할 곳에 남긴다. 이 분리가 있어야 개인 프로젝트와 회사 도메인을 같은 운영 루프 안에서 다룰 수 있다.
+
+## dry-run과 실제 전송을 나누면 외부 서비스가 작업을 막지 않는다
+
+외부 서비스가 들어오면 검증이 애매해진다.
+
+webhook secret이 없으면 실제 Slack 전송은 검증할 수 없다. 그렇다고 작업 전체를 멈추면 문서, 스크립트, config 검증까지 모두 막힌다.
+
+그래서 검증을 둘로 나눴다.
+
+```text
+1. script syntax check
+2. dry-run payload 확인
+3. secret pattern scan
+4. Codex config notify 설정 확인
+5. webhook secret이 준비된 뒤 실제 Slack 전송
+```
+
+실제 전송은 마지막 단계다.
+
+그 전에도 확인할 수 있는 것이 많다. dry-run payload가 맞고, secret이 파일에 남지 않았고, config에 `notify`가 들어갔다면 대부분의 설계는 검증된 것이다.
+
+이 방식은 앞으로 다른 외부 action에도 그대로 쓸 수 있다. 먼저 dry-run으로 구조를 확인하고, 실제 write나 send는 마지막 human gate 뒤에 둔다.
+
+## 중장기계획은 알림을 운영 규칙으로 받아들였다
+
+Slack 알림을 붙이면서 six repository ai native automation practice plan도 바뀌었다.
+
+이 문서는 단순한 할 일 목록이 아니다. 매일 작업 시작 전에 읽고, 작업 종료 후 업데이트하는 프로젝트 생명주기 문서다. 그래서 알림 작업도 "있으면 좋은 기능"이 아니라 daily loop의 일부가 됐다.
+
+현재 운영 규칙은 단순하다.
+
+- 작업 시작 전 `long-term-plan-review`로 오늘 병렬 실행 가능한 2~3개 작업을 고른다.
+- 작업 종료 후 `long-term-plan-update`로 완료, 진행, 차단, 블로그 기록 포인트를 업데이트한다.
+- Codex가 끝나면 Slack 알림으로 완료 신호를 받는다.
+- 중요한 구조 변경은 사람용 계획서와 Codex용 compact brief에 함께 반영한다.
+
+이렇게 보면 Slack 알림은 자동화 기능이라기보다 운영 리듬의 한 부분이다.
+
+## 작은 완료 신호가 다음 자동화를 가능하게 한다
+
+Slack 알림 자체가 대단한 자동화는 아니다.
+
+하지만 이 알림이 있어야 다음 자동화가 편해진다. 회귀 테스트 실패 분석 봇을 돌려도, PR summary 고도화 작업을 맡겨도, context budget과 Git safety guard를 다듬어도, 먼저 알아야 하는 것은 같다.
+
+끝났는가.
+
+끝났다면 무엇을 검수해야 하는가.
+
+막혔다면 어디서 막혔는가.
+
+위임자는 모든 일을 직접 붙잡고 있지 않는다. 대신 결과가 돌아오는 길을 만든다. Codex Slack notify는 그 길의 첫 번째 표지판이다.
+
+다음 글에서는 이 완료 신호를 만든 뒤, 프롬프트 작성 레인이 왜 `Codex task brief`로 정리되어야 했는지로 넘어간다.
+
+## 함께 읽으면 좋은 글
+
+- [AI와 파트너가 아니라 위임자로 일하기 위해 중장기계획을 만들었다](/posts/2026-05-02-ai-native-delegator-long-term-plan)
+- codex prompt to lifecycle document
+- ai native change management before after

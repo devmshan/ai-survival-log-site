@@ -1,7 +1,7 @@
 {
-  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "generatedAt": "2026-05-02T00:27:55.598Z",
   "source": "content/posts",
-  "totalSeries": 5,
+  "totalSeries": 6,
   "entries": [
     {
       "seriesSlug": "agent-harness-notes",
@@ -44,9 +44,9 @@
       "series": "개발자 자동화 실습",
       "posts": [
         {
-          "slug": "2026-04-17-developer-automation-lab-01-pr-summary",
+          "slug": "2026-05-02-developer-automation-lab-01-pr-summary",
           "title": "개발자 자동화 실습 01 — PR summary를 직접 만들고 실제 PR에서 확인했다",
-          "date": "2026-04-17",
+          "date": "2026-05-02",
           "seriesOrder": 1
         },
         {
@@ -83,6 +83,30 @@
           "slug": "2026-04-24-professors-brain-03-closing-the-loop",
           "title": "도서관과 교수님의 뇌 03 — AI가 루프를 닫는다는 것, Claude Design에서 AI for Science까지",
           "date": "2026-04-24",
+          "seriesOrder": 3
+        }
+      ]
+    },
+    {
+      "seriesSlug": "six-repository-ai-native-automation",
+      "series": "6개 Repository AI Native 자동화 실습",
+      "posts": [
+        {
+          "slug": "2026-05-02-ai-native-delegator-long-term-plan",
+          "title": "AI와 파트너가 아니라 위임자로 일하기 위해 중장기계획을 만들었다",
+          "date": "2026-05-02",
+          "seriesOrder": 1
+        },
+        {
+          "slug": "2026-05-02-codex-slack-notify-first-operating-signal",
+          "title": "위임자가 되려면 Codex 완료 신호부터 받아야 했다",
+          "date": "2026-05-02",
+          "seriesOrder": 2
+        },
+        {
+          "slug": "2026-05-02-codex-task-brief-prompt-writing-lane",
+          "title": "프롬프트를 잘 쓰려다 Codex task brief를 만들게 됐다",
+          "date": "2026-05-02",
           "seriesOrder": 3
         }
       ]
