@@ -1,0 +1,4 @@
+npm run build failed
+Error: post frontmatter contract mismatch in content/posts/2026-05-02-example.mdx
+missing required field: description
+exit code: 1

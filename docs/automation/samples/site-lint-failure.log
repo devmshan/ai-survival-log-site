@@ -1,0 +1,4 @@
+npm run lint failed
+eslint: src/components/post/PostCard.tsx
+error: trailing whitespace on line 48
+exit code: 1

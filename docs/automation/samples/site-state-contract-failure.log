@@ -1,0 +1,4 @@
+npm run state failed
+content contract summary changed unexpectedly
+output/state/content-contract-summary.json differs from generated content metadata
+exit code: 1

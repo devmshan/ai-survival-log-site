@@ -1,0 +1,4 @@
+npm test failed
+TestingLibraryElementError: Unable to find an element with role "link" and name "Series"
+failing test: src/components/post/__tests__/SeriesPanel.test.tsx
+exit code: 1
