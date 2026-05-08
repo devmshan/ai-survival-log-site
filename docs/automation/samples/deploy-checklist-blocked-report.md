@@ -4,7 +4,7 @@
 
 - repository: ai-survival-log-site
 - target environment: production
-- branch or commit: `main` at mock short SHA `0000000`
+- branch or commit: `main at mock short SHA 0000000`
 - status: blocked before deploy
 - category: contract-mismatch
 - severity: high
@@ -17,8 +17,8 @@
 | lint | `npm run lint` | pass |
 | tests | `npm test` | pass |
 | build | `npm run build` | pass |
-| derived state | `npm run state` plus diff review | blocked |
-| content contract | published post metadata review | review required |
+| derived state | `npm run state plus diff review` | blocked |
+| content contract | `published post metadata review` | review required |
 
 ## Checks Skipped
 
@@ -72,3 +72,4 @@ npm run state
 - secondary categories: release-gate-review
 - flaky or deterministic: deterministic mock fixture
 - related execution record: deploy checklist local dry-run
+- generator version: deploy-checklist-report-local-v1

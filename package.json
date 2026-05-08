@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "state": "node scripts/state",
+    "deploy:checklist:report": "node scripts/deploy-checklist-report.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

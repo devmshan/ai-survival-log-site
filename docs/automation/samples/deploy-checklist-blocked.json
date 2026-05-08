@@ -1,0 +1,99 @@
+{
+  "repository": "ai-survival-log-site",
+  "targetEnvironment": "production",
+  "branchOrCommit": "main at mock short SHA 0000000",
+  "status": "blocked before deploy",
+  "category": "contract-mismatch",
+  "severity": "high",
+  "deployWriteStatus": "none",
+  "checksRun": [
+    {
+      "name": "lint",
+      "commandOrEvidence": "npm run lint",
+      "result": "pass"
+    },
+    {
+      "name": "tests",
+      "commandOrEvidence": "npm test",
+      "result": "pass"
+    },
+    {
+      "name": "build",
+      "commandOrEvidence": "npm run build",
+      "result": "pass"
+    },
+    {
+      "name": "derived state",
+      "commandOrEvidence": "npm run state plus diff review",
+      "result": "blocked"
+    },
+    {
+      "name": "content contract",
+      "commandOrEvidence": "published post metadata review",
+      "result": "review required"
+    }
+  ],
+  "checksSkipped": [
+    {
+      "name": "environment readiness",
+      "reason": "runtime secret values are not inspected in docs or mock reports"
+    },
+    {
+      "name": "deploy command dry-run",
+      "reason": "not part of this local checklist mock"
+    },
+    {
+      "name": "rollback execution",
+      "reason": "no deploy occurred"
+    }
+  ],
+  "firstBlockingCheck": {
+    "signal": "generated state diff has not been reviewed for the release candidate",
+    "check": "derived state review",
+    "observedAt": "sanitized mock fixture"
+  },
+  "suspectedScope": {
+    "files": [
+      "content/posts/*.mdx",
+      "output/state/*.json"
+    ],
+    "contract": "published content metadata and generated state must agree before deploy",
+    "generatedArtifactImpact": "tracked state output may need regeneration or review",
+    "downstreamImpact": "sitemap, series pages, tag pages, and post routes may be affected"
+  },
+  "reproduction": [
+    "npm run lint",
+    "npm test",
+    "npm run build",
+    "npm run state"
+  ],
+  "ownerDecision": {
+    "needed": true,
+    "question": "Is the generated state diff expected for this release?",
+    "safeNextAction": "review state diff and content metadata before any deploy command is allowed",
+    "rollbackReadiness": "manual rollback note required before deployment",
+    "outOfScope": [
+      "deploy command",
+      "GitHub comment",
+      "Slack alert",
+      "auto-fix branch",
+      "release commit",
+      "production log archive"
+    ]
+  },
+  "unsafeDataCheck": {
+    "rawLogRetained": "no",
+    "redactionNeeded": "no",
+    "secretCustomerCompanySignal": "none",
+    "environmentValuesIncluded": "no",
+    "productionLogsIncluded": "no",
+    "stopConditionTriggered": "yes, generated state review is incomplete"
+  },
+  "notes": {
+    "secondaryCategories": [
+      "release-gate-review"
+    ],
+    "flakyOrDeterministic": "deterministic mock fixture",
+    "relatedExecutionRecord": "deploy checklist local dry-run"
+  }
+}

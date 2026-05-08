@@ -12,6 +12,14 @@ Apply the deploy checklist runner plan to `ai-survival-log-site` before adding a
 
 The goal is to prove that a deploy checklist can stop at local dry-run report stage when a release-facing condition is not ready, even if lint, tests, and build pass.
 
+## Local Generator
+
+```bash
+npm run deploy:checklist:report -- --input docs/automation/samples/deploy-checklist-blocked.json --output tmp/ci-artifacts/deploy-checklist-report.md
+```
+
+The generator reads a sanitized JSON checklist fixture, renders a deterministic markdown report, and writes only to `tmp/` or the operating system temp directory. It blocks before writing if the input or rendered report contains secrets, production log signals, SQL bodies, company evidence signals, or protected output paths.
+
 ## Local Dry-Run Checklist
 
 | Check | Status in mock | Reviewer question |
@@ -28,6 +36,7 @@ The goal is to prove that a deploy checklist can stop at local dry-run report st
 
 | Report | Purpose |
 | --- | --- |
+| `docs/automation/samples/deploy-checklist-blocked.json` | Sanitized input fixture for the local report generator |
 | `docs/automation/samples/deploy-checklist-blocked-report.md` | Demonstrates a local dry-run that blocks before deploy because generated state review and rollback note are incomplete |
 
 ## Boundary
@@ -35,6 +44,7 @@ The goal is to prove that a deploy checklist can stop at local dry-run report st
 Allowed:
 
 - sanitized checklist report
+- sanitized checklist JSON fixture
 - checks run and checks skipped
 - first blocking signal
 - generated artifact impact
