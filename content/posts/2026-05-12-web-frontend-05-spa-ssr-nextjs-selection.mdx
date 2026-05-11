@@ -1,0 +1,429 @@
+---
+title: "AI 웹개발 기초: 프론트엔드 1-5 | SPA, SSR, Next.js는 어떤 기준으로 골라야 할까"
+seoTitle: "SPA와 SSR, Next.js 선택 기준 - 프론트엔드 렌더링 전략 이해하기"
+date: "2026-05-12"
+tags: ["frontend", "web", "spa", "mpa", "csr", "ssr", "ssg", "nextjs", "app-router", "rsc", "server-components", "client-components", "server-actions", "server-functions", "cache", "revalidation", "isr", "streaming", "partial-rendering", "seo", "routing", "hydration", "vibe-coding", "study", "blog", "series"]
+description: "SPA/MPA와 CSR/SSR/SSG를 서로 다른 축으로 나누고, SEO가 필요한 공개 URL과 로그인 후 업무 화면에서 Next.js App Router, Server/Client Component, cache/revalidation, streaming을 어떤 기준으로 선택할지 정리하는 AI 웹개발 기초 시리즈 프론트엔드 1-5."
+draft: false
+series: "AI에게 웹 개발을 더 잘 맡기기 위한 웹 기초"
+seriesSlug: "ai-web-basics"
+seriesOrder: 5
+---
+
+4편에서는 React를 쓰는데 왜 Node.js와 npm, build tool이 필요한지 봤다. 사용자가 보는 UI는 브라우저에서 실행되지만, 그 UI를 만들고 검사하고 배포 가능한 파일로 바꾸는 도구들은 대개 Node.js 위에서 실행된다는 이야기였다.
+
+이제 그 build 결과물이 실제 웹 서비스에서는 어떤 구조로 움직이는지 봐야 한다. 여기서 갑자기 SPA, MPA, CSR, SSR, SSG, hydration, Next.js 같은 말이 한꺼번에 나온다.
+
+처음에는 이렇게 묻기 쉽다.
+
+```text
+요즘 웹은 전부 SPA 아닌가?
+SEO가 필요하면 SSR을 쓰는 것 아닌가?
+React를 쓰려면 Next.js를 같이 써야 하나?
+```
+
+이 질문들이 헷갈리는 이유는 용어의 축이 섞여 있기 때문이다. 이 글에서 붙잡을 문장은 하나다.
+
+> SPA/MPA는 page transition 구조이고, CSR/SSR은 HTML을 어디서 만드는지에 대한 rendering 방식이다.
+
+이 구분이 잡히면 선택 기준이 훨씬 선명해진다. 어떤 기술이 더 최신인가보다, 이 URL이 어떤 화면이고 누구에게 어떤 HTML을 먼저 보여줘야 하는지가 먼저다.
+
+## 용어가 섞이면 기술 선택도 흔들린다
+
+프론트엔드 기술 선택에서 자주 나오는 말이 있다.
+
+```text
+이건 SPA로 갈까요?
+SSR이 필요할까요?
+Next.js를 써야 할까요?
+```
+
+이 질문은 중요하지만, 그대로는 조금 위험하다. SPA와 SSR은 같은 축의 말이 아니기 때문이다.
+
+SPA는 페이지 전환 구조다. 사용자가 링크를 눌렀을 때 브라우저가 매번 새 HTML 문서를 받아오는지, 아니면 처음 받은 문서를 유지한 채 JavaScript가 화면만 바꾸는지를 말한다.
+
+SSR은 rendering 방식이다. 화면에 들어갈 HTML을 브라우저가 JavaScript로 만드는지, 서버가 먼저 만들어 보내는지를 말한다.
+
+그래서 "SPA냐 SSR이냐"라고 물으면 두 질문이 하나로 뭉친다.
+
+```text
+질문 1:
+화면 전환은 새 문서 이동인가, app-like navigation인가?
+
+질문 2:
+초기 HTML은 browser가 만들까, server가 만들까?
+```
+
+이 둘을 나눠야 한다. 그래야 내부 업무 화면, 공개 블로그, 상품 상세, 관리자 dashboard, 기존 JSP page 일부 전환을 같은 기준표 위에서 비교할 수 있다.
+
+## SPA와 MPA는 화면 이동 방식의 이름이다
+
+SPA는 Single Page Application이다. 처음 받은 HTML 문서를 유지하고, 이후 화면 전환을 JavaScript routing과 component rendering으로 처리한다.
+
+전형적인 SPA에서는 사용자가 `/orders`에서 `/orders/123`으로 이동해도 브라우저가 서버에서 완전히 새 HTML 문서를 받지 않을 수 있다. JavaScript router가 URL을 바꾸고, 현재 URL에 맞는 component를 렌더링한다.
+
+```text
+SPA navigation:
+처음 HTML 수신
+-> JavaScript bundle 실행
+-> route 변경
+-> component 교체
+-> 필요한 API data 요청
+```
+
+이 구조는 app-like UX에 강하다. 관리자 화면, dashboard, mail, calendar, chat, ERP 업무 화면처럼 사용자가 로그인한 뒤 여러 화면을 빠르게 오가는 도구에 잘 맞는다.
+
+반대로 MPA는 Multi Page Application이다. URL 이동마다 서버가 새 HTML 문서를 만들어 보내고, 브라우저는 그 문서를 새로 로드한다.
+
+```text
+MPA navigation:
+/orders 요청
+-> 서버가 HTML 응답
+
+/orders/123 요청
+-> 서버가 새 HTML 응답
+```
+
+Spring MVC/JSP, Django, Rails 같은 전통적인 server-rendered web application이 이 모델에 가깝다. 기존 회사 시스템이나 오래된 관리자 페이지를 떠올리면 이해하기 쉽다.
+
+중요한 것은 SPA가 무조건 현대적이고 MPA가 낡았다는 결론이 아니다. SPA와 MPA는 화면 이동 방식이다. 앱처럼 오래 머무르며 여러 상호작용을 하는 화면이면 SPA가 자연스럽고, URL마다 독립 문서로 읽히는 공개 페이지라면 MPA나 server-rendered 구조가 여전히 강하다.
+
+## CSR과 SSR은 HTML을 누가 먼저 만드는지의 이름이다
+
+CSR은 Client-side Rendering이다. 서버가 거의 비어 있는 HTML과 JavaScript bundle을 보내면, 브라우저가 bundle을 실행하고 API data를 받아 화면을 만든다.
+
+아주 단순화하면 이런 흐름이다.
+
+```html
+<div id="root"></div>
+<script src="/app.js"></script>
+```
+
+```text
+browser:
+app.js 다운로드
+-> React/Vue 실행
+-> API 호출
+-> 화면 HTML 생성
+```
+
+SSR은 Server-side Rendering이다. 서버가 data를 조회하고 HTML을 먼저 만들어 브라우저에 보낸다.
+
+```text
+request:
+/products/123
+
+server:
+상품 data 조회
+-> HTML 생성
+-> title, description, 본문 포함 응답
+
+browser:
+HTML을 즉시 표시
+-> JavaScript로 상호작용 연결
+```
+
+SSG는 Static Site Generation이다. 요청이 올 때마다 HTML을 만드는 대신, build 시점이나 재생성 시점에 미리 HTML을 만들어 둔다. 블로그 글, 문서, 랜딩 페이지처럼 내용이 자주 바뀌지 않고 공개 URL로 읽히는 화면에 잘 맞는다.
+
+여기서 hydration도 함께 나온다. 서버가 HTML을 먼저 만들어 보냈더라도 버튼 click, form 입력, tab 전환 같은 상호작용은 JavaScript가 맡아야 한다. Hydration은 서버가 보낸 HTML에 브라우저 JavaScript가 이벤트와 state를 붙여 interactive하게 만드는 과정이라고 보면 된다.
+
+```text
+SSR/SSG:
+server 또는 build가 HTML을 먼저 준비
+
+hydration:
+browser JavaScript가 그 HTML에 상호작용을 연결
+```
+
+그래서 SSR이나 SSG가 JavaScript를 없애는 기술이라고 보면 안 된다. 더 정확히는 "초기 HTML을 서버나 build 단계에서 준비하고, 브라우저에서는 필요한 상호작용을 이어 붙이는 방식"이다.
+
+## 흔한 조합은 있지만 동의어는 아니다
+
+초보 단계에서는 SPA와 CSR, MPA와 SSR이 자주 붙어 다닌다.
+
+하지만 동의어는 아니다. 조합을 펼치면 네 칸이 나온다.
+
+| 조합 | 의미 | 예시 |
+| --- | --- | --- |
+| SPA + CSR | 처음 HTML 이후 브라우저가 app처럼 화면을 만들고 전환한다 | Vite + React/Vue 관리자 화면 |
+| SPA + SSR | 첫 진입은 서버 HTML을 받고 이후 navigation은 app처럼 움직인다 | Next.js, Nuxt, SvelteKit 계열 |
+| MPA + SSR | URL마다 서버가 새 HTML 문서를 보낸다 | Spring MVC/JSP, Django, Rails |
+| MPA + CSR | 서버 HTML page 안 일부 영역만 JavaScript component로 렌더링한다 | JSP 안의 React/Vue widget |
+
+이 표가 중요한 이유는 점진 전환을 설명할 수 있기 때문이다.
+
+기존 JSP 기반 ERP가 있다고 해서 하루아침에 전체를 SPA로 갈아엎어야 하는 것은 아니다. 어떤 화면은 그대로 MPA+SSR로 유지하고, 복잡한 grid나 실시간 입력이 필요한 일부 영역만 React/Vue component로 넣을 수 있다. 반대로 새로 만드는 공개 portal은 첫 진입 HTML과 metadata가 중요하므로 SSR/SSG를 지원하는 framework를 고를 수 있다.
+
+기술 선택은 종교가 아니라 화면별 배치다.
+
+## CSR-only SPA는 검색보다 먼저 빈 HTML 문제를 만난다
+
+SPA SEO를 이야기하면 "요즘 검색엔진은 JavaScript도 읽지 않나"라는 말이 나온다. 일부 맞는 말이지만, 실무 판단으로는 충분하지 않다.
+
+CSR-only SPA에서는 서버가 처음 보내는 HTML이 거의 비어 있을 수 있다.
+
+```html
+<html>
+  <head>
+    <title>App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="/assets/app.js"></script>
+  </body>
+</html>
+```
+
+사용자 브라우저에서는 bundle이 실행되고 API가 응답하면 화면이 잘 보인다. 하지만 검색엔진, 소셜 공유 봇, 링크 미리보기, 장애 상황의 사용자는 다른 문제를 만난다.
+
+검색 노출이 필요한 URL이라면 서버 응답 HTML에 최소한 다음이 안정적으로 들어가는 편이 좋다.
+
+```html
+<title>상품명 또는 글 제목</title>
+<meta name="description" content="페이지 설명" />
+<link rel="canonical" href="https://example.com/products/123" />
+<meta property="og:title" content="공유 제목" />
+<meta property="og:description" content="공유 설명" />
+```
+
+없는 글은 404여야 하고, 이동한 URL은 redirect 상태 코드가 맞아야 한다. URL마다 본문, title, description, Open Graph metadata가 달라야 한다.
+
+그래서 문제는 "SPA는 SEO가 안 된다"가 아니다. 더 정확한 문제는 "검색과 공유가 필요한 공개 URL인데 초기 HTML이 비어 있으면 불리하다"이다.
+
+이렇게 나눠 보면 선택이 단순해진다.
+
+| 화면 성격 | rendering 우선순위 |
+| --- | --- |
+| 로그인 후 dashboard/admin/ERP | CSR SPA도 자연스럽다 |
+| 블로그, 문서, landing page | SSG 또는 prerendering이 잘 맞는다 |
+| 상품 상세, 공개 profile, commerce | SSR, SSG, ISR, hybrid rendering을 검토한다 |
+| 사용자별 실시간 업무 화면 | SEO보다 app-like UX와 API contract가 중요하다 |
+
+모든 화면을 SSR로 바꾸는 것이 답은 아니다. 검색 결과와 공유 미리보기에 노출되어야 하는 URL에 의미 있는 HTML을 먼저 제공하는 것이 핵심이다.
+
+## SSR과 SSG는 서버 HTML에 브라우저 상호작용을 붙이는 선택이다
+
+SSR을 고르면 모든 문제가 사라질 것 같지만, 그렇지는 않다.
+
+SSR은 서버가 요청마다 HTML을 만들 수 있게 해준다. 그래서 요청 시점 data가 필요한 공개 page에 유리하다. 하지만 서버 부담이 늘고, 사용자별 data와 cache 정책을 더 신중히 설계해야 한다.
+
+SSG는 미리 HTML을 만들어 두므로 빠르고 안정적이다. 블로그나 문서처럼 같은 내용을 여러 사용자에게 보여주는 화면에 잘 맞는다. 하지만 data가 바뀌면 다시 build하거나 재생성해야 한다.
+
+ISR은 이 사이에 있다. static result를 전체 재배포 없이 조건에 따라 다시 만들 수 있게 해준다. "상품 상세는 빠르게 보여주고 싶지만 재고나 가격은 일정 주기로 갱신하고 싶다" 같은 상황에서 생각해볼 수 있다.
+
+다만 초보 단계에서 API 이름부터 외울 필요는 없다. Next.js의 cache와 revalidation API는 version과 설정에 따라 세부 방식이 바뀔 수 있다. 먼저 잡아야 할 질문은 이쪽이다.
+
+```text
+이 URL은 검색에 노출되어야 하는가?
+본문 HTML이 첫 응답에 들어가야 하는가?
+data는 사용자마다 다른가?
+얼마나 오래된 data까지 허용할 수 있는가?
+수정 직후 어떤 page와 list를 갱신해야 하는가?
+느린 data 때문에 page 전체가 멈춰도 되는가?
+```
+
+SSR, SSG, ISR, cache, revalidation은 결국 이 질문들에 답하기 위한 도구다.
+
+## Next.js는 React를 서비스 framework로 확장한다
+
+이제 Next.js를 볼 차례다.
+
+Next.js를 React의 경쟁자로 이해하면 헷갈린다. React는 UI를 component와 state 중심으로 만드는 library다. Routing, SSR, SSG, metadata, image/font optimization, cache, server function 같은 service 문제는 React 자체가 모두 정해주지 않는다.
+
+Next.js는 React 위에 실제 web service를 만들 때 필요한 application layer를 얹은 framework다.
+
+```text
+React:
+component, state, props, event, UI rendering
+
+Next.js:
+file-based routing, layout, SSR/SSG, metadata,
+server/client component boundary, cache, streaming,
+route handler, server function, optimization
+```
+
+그래서 "React냐 Next.js냐"는 대립 질문으로 보면 안 된다. 보통은 "React UI를 직접 조립할 것인가, 아니면 React 위에 Next.js framework를 얹어 routing/rendering/metadata/cache까지 같이 가져갈 것인가"에 가깝다.
+
+Next.js가 강한 곳은 공개 URL이 많은 서비스다.
+
+블로그, 문서, landing page, commerce, SaaS marketing page, 공개 profile처럼 검색과 공유 미리보기가 중요한 화면에서는 routing, metadata, SSR/SSG, static generation, cache 전략이 한 묶음으로 필요하다.
+
+반대로 로그인 이후의 순수 내부 ERP 본체라면 Next.js가 항상 1순위는 아니다. 검색 노출보다 대량 grid, form, 권한, 세션, 파일/엑셀/출력, API contract가 더 중요할 수 있다. 이 경우 React/Vue/Angular SPA가 더 단순하고 운영하기 쉬울 수 있다.
+
+## App Router는 한 page를 여러 실행 위치로 나누게 만든다
+
+Next.js App Router를 "SSR을 켜는 기능" 정도로만 보면 부족하다.
+
+App Router의 핵심은 한 route 안에서 실행 위치와 갱신 방식을 나누는 것이다.
+
+```text
+정적 shell:
+layout, navigation, header, sidebar
+
+Server Component:
+server에서 data read, HTML/RSC payload 생성, bundle 절감
+
+Client Component:
+state, event handler, browser API, interactive widget
+
+Server Function / Server Action:
+form submit, mutation, cache invalidation
+
+Cache / revalidation:
+data와 route output을 언제 재사용하고 갱신할지 결정
+
+Streaming:
+느린 section을 Suspense boundary 뒤에서 나중에 채움
+```
+
+예를 들어 상품 상세 page를 생각해보자.
+
+```text
+/products/123
+
+layout:
+header, navigation, footer
+
+server side:
+상품명, 가격, 설명, SEO metadata
+
+client side:
+수량 변경 button, 장바구니 담기, image carousel
+
+streaming:
+추천 상품, 리뷰 요약, 개인화 영역
+
+cache:
+상품 기본 정보는 재사용
+재고나 사용자별 할인은 더 짧게 갱신
+```
+
+이 모델에서는 page 전체를 CSR 또는 SSR 한 단어로 끝내기 어렵다. 어떤 부분은 static shell이고, 어떤 부분은 server에서 읽고, 어떤 부분은 browser에서 상호작용하고, 어떤 data는 cache하고, 어떤 section은 stream한다.
+
+`"use client"`와 `"use server"`도 이 경계에서 이해해야 한다.
+
+`"use client"`는 Client Component 진입점이다. `useState`, `useEffect`, click handler, `window`, `localStorage`, chart/map/editor 같은 browser-only 기능이 필요할 때 쓴다. page 전체에 무심코 붙이면 server component의 이점을 잃고 client bundle이 커질 수 있다.
+
+`"use server"`는 Server Component 표시가 아니다. App Router에서 page와 layout은 기본적으로 Server Component로 볼 수 있고, `"use server"`는 서버에서 실행될 function boundary를 표시한다. 요즘 문서에서는 더 넓은 말로 Server Function을 쓰고, form submit이나 mutation 맥락에서는 Server Action이라고 부른다.
+
+바이브코딩에서 이 차이는 중요하다. AI가 막히면 page 맨 위에 `"use client"`를 붙여 문제를 해결하려 할 수 있다. 그 결과 server에서 처리할 수 있던 data read와 metadata, cache 이점이 client bundle 쪽으로 밀릴 수 있다.
+
+좋은 질문은 이것이다.
+
+```text
+이 component는 정말 browser state나 event handler가 필요한가?
+server에서 data를 읽고 client에는 interactive leaf만 보내면 안 되는가?
+mutation 이후 어떤 cache나 path를 revalidate해야 하는가?
+느린 data는 page 전체를 막지 말고 Suspense/streaming으로 나눌 수 있는가?
+```
+
+App Router를 배운다는 것은 API 이름을 외우는 일이 아니다. 한 화면을 실행 위치, data freshness, interactivity, loading UX로 나눠보는 법을 배우는 일이다.
+
+## 기술 선택은 framework 취향보다 URL의 성격에서 시작한다
+
+React, Vue, Angular, Next.js를 비교할 때도 같은 기준이 필요하다.
+
+React, Vue, Angular는 UI를 component와 state 중심으로 만드는 선택지다. Next.js는 React 위에 올라가는 web application framework다. 층위가 다르다.
+
+그래서 선택 기준도 "무엇이 더 좋다"보다 "어떤 화면을 어떤 팀이 운영할 것인가"에서 시작해야 한다.
+
+| 상황 | 우선 고려할 선택 |
+| --- | --- |
+| 내부 관리자, ERP, dashboard | React/Vue/Angular SPA + TypeScript |
+| 기존 JSP 일부 점진 전환 | Vue 또는 React component를 page 일부에 삽입 |
+| 공개 blog, 문서, landing page | Next.js 같은 SSG/SSR 지원 framework |
+| commerce, 공개 상품 상세, SaaS marketing | Next.js, Nuxt, SvelteKit 같은 hybrid rendering framework |
+| SEO가 필요 없는 로그인 후 app | CSR SPA가 단순하고 자연스러울 수 있음 |
+| 대규모 enterprise 표준화 | Angular 또는 강하게 규칙화한 React/Vue stack |
+| 외부 portal + 내부 업무 + mobile이 함께 있음 | channel별로 frontend 선택을 나눔 |
+
+회사 시스템 전환에서도 같은 원리가 적용된다. 내부 ERP 본체는 검색 노출보다 업무 생산성과 안정성이 중요하다. 대량 grid, 권한, 세션, file upload/download, 엑셀, 출력, API contract가 핵심이다. 이런 화면을 단지 "Next.js가 최신이니까"라는 이유로 고르면 복잡도만 늘 수 있다.
+
+반대로 외부 portal이나 공개 안내 page는 검색, 공유, metadata, URL별 상태 코드가 중요하다. 이쪽에서는 Next.js 같은 framework가 더 자연스럽다.
+
+기술 선택은 한 번에 하나로 통일하는 일이 아니다. 공개 URL, 로그인 후 app, 기존 시스템 일부 전환, mobile channel을 나눠서 볼 수 있어야 한다.
+
+## AI에게는 기술명보다 rendering 계약을 말해야 한다
+
+바이브코딩에서 가장 위험한 요청은 너무 짧은 요청이다.
+
+```text
+Next.js로 만들어줘.
+SPA로 만들어줘.
+SSR 적용해줘.
+```
+
+AI는 이 요청에 맞춰 코드를 만들 수 있다. 하지만 왜 그 선택을 했는지, 어떤 URL에 어떤 rendering이 필요한지, 어떤 data가 cache되어도 되는지까지 자동으로 맞추지는 못한다.
+
+요청을 이렇게 바꾸는 편이 낫다.
+
+```text
+이 서비스는 공개 블로그와 로그인 후 관리자 화면이 함께 있습니다.
+
+공개 글 상세 URL은 검색 노출과 Open Graph 공유가 중요하므로
+title, description, canonical, 본문 HTML이 첫 응답에 포함되게 설계해 주세요.
+
+로그인 후 관리자 dashboard는 SEO가 필요 없고
+사용자별 data와 빠른 화면 전환이 중요하므로 CSR 중심으로 설계해 주세요.
+
+Next.js App Router를 쓴다면
+Server Component와 Client Component boundary를 나눠 주세요.
+상호작용이 필요한 button, form, chart만 client component로 두고,
+data read와 metadata는 가능한 server 쪽에 둬 주세요.
+
+mutation 이후에는 어떤 list와 detail cache를 갱신해야 하는지도
+같이 설명해 주세요.
+```
+
+검토할 때는 다음 질문을 던지면 된다.
+
+```text
+SPA/MPA와 CSR/SSR을 같은 뜻처럼 쓰고 있지 않은가?
+검색 노출이 필요한 URL에 본문 HTML과 metadata가 있는가?
+로그인 후 화면에 불필요한 SSR 복잡도를 넣고 있지 않은가?
+Next.js를 React 대체재처럼 설명하고 있지 않은가?
+"use client"를 page 전체에 붙여 server 이점을 잃지 않았는가?
+Server Function/Action 내부에서 권한을 다시 확인하는가?
+cache와 revalidation 기준이 data 성격과 맞는가?
+느린 section 때문에 page 전체가 멈추지 않게 나눴는가?
+```
+
+이 정도만 말해도 AI가 만드는 프론트엔드의 품질이 달라진다. 화면이 보이는지뿐 아니라, URL, HTML, metadata, 실행 위치, cache, loading UX까지 함께 검토하게 만들 수 있기 때문이다.
+
+## 프론트엔드 5편의 결론은 축을 분리하는 것이다
+
+SPA, CSR, SSR, SSG, Next.js는 처음 보면 전부 비슷한 말처럼 보인다. 모두 "요즘 웹 앱을 만드는 방식"이라는 큰 상자 안에 들어 있기 때문이다.
+
+하지만 선택 기준은 축을 나누면 선명해진다.
+
+```text
+SPA / MPA:
+페이지 전환 구조
+
+CSR / SSR / SSG:
+HTML 생성 위치와 시점
+
+hydration:
+server/build가 보낸 HTML에 browser interaction을 붙이는 과정
+
+Next.js:
+React 위에서 routing, rendering, metadata, cache, streaming을 묶는 framework
+```
+
+이제 프론트엔드 섹션의 큰 흐름이 하나로 이어진다.
+
+1편에서는 웹이 문서에서 복잡한 UI 생태계로 커진 이유를 봤다. 2편에서는 브라우저가 HTML, CSS, JavaScript를 DOM, CSSOM, render tree, layout, paint로 처리하는 내부 모델을 봤다. 3편에서는 jQuery의 DOM 직접 조작에서 React식 state 기반 UI로 넘어간 이유를 봤다. 4편에서는 Node.js, npm, build tool이 왜 필요한지 정리했다.
+
+5편에서는 그 결과물을 어떤 rendering 전략과 framework로 서비스할지 정리했다.
+
+프론트엔드 기초는 여기서 끝나지 않는다. 이 다음에는 백엔드와 만난다. API는 어떤 contract로 설계해야 하는가. HTTP status code와 header는 UI 상태와 어떻게 연결되는가. 인증, cookie, CORS, CSRF, cache, security header는 어디서 책임져야 하는가.
+
+프론트엔드는 화면만 만드는 일이 아니지만, 모든 책임을 혼자 떠안는 영역도 아니다. 좋은 웹 서비스는 브라우저, 프론트엔드 framework, 백엔드 API, 웹서버와 배포 계층이 각자 맡을 책임을 분명히 나눌 때 안정적으로 굴러간다.
+
+다음 섹션에서는 그 경계의 반대편, 백엔드를 볼 차례다.
+
+## 함께 읽으면 좋은 글
+
+- [AI 웹개발 기초: 프론트엔드 1-4 | React를 쓰는데 왜 Node.js와 npm이 필요할까](/posts/2026-05-12-web-frontend-04-node-npm-build)
+- frontend basics for vibe coders
+- [AI 웹개발 기초: 프론트엔드 1-1 | 프론트엔드는 왜 이렇게 복잡해졌을까](/posts/2026-05-12-web-frontend-01-web-to-frontend-ecosystem)

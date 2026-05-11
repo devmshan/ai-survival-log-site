@@ -1,0 +1,620 @@
+---
+title: "AI 웹개발 기초: 프론트엔드 1-3 | jQuery에서 React로 넘어간 진짜 이유"
+seoTitle: "jQuery에서 React로 넘어간 이유 — DOM 직접 조작에서 state 기반 UI까지"
+date: "2026-05-12"
+tags: ["frontend", "web", "backend", "javascript", "jquery", "ajax", "react", "vue", "angular", "jsx", "dom", "state", "state-management", "virtual-dom", "reconciliation", "hooks", "effect", "controlled-form", "server-state", "react-query", "redux", "zustand", "vibe-coding", "study", "blog", "series"]
+description: "jQuery의 DOM 직접 조작과 AJAX가 해결한 문제를 인정하고, UI가 커지면서 React, Vue, Angular 같은 state/data 기반 component UI가 왜 필요해졌는지 설명하는 AI 웹개발 기초 시리즈 프론트엔드 1-3."
+draft: false
+series: "AI에게 웹 개발을 더 잘 맡기기 위한 웹 기초"
+seriesSlug: "ai-web-basics"
+seriesOrder: 3
+---
+
+2편에서는 DOM을 화면 자체가 아니라 브라우저의 작업 모델로 봤다. JavaScript는 DOM을 읽고 바꾸고, 브라우저는 그 변경을 바탕으로 rendering pipeline과 accessibility tree를 다시 갱신한다.
+
+이제 질문이 바뀐다. DOM을 직접 찾아서 바꾸는 방식으로 UI를 만들 수 있다. 실제로 jQuery는 이 일을 훨씬 쉽게 만들었다. 그런데 왜 프론트엔드의 중심은 점점 React 같은 state 기반 UI로 넘어갔을까.
+
+이 글에서 붙잡을 문장은 이것이다.
+
+> jQuery는 DOM을 쉽게 직접 바꾸게 해줬고, React는 DOM을 직접 바꾸는 책임을 줄이고 state에서 화면을 계산하게 만들었다.
+
+백엔드 개발자라면 React를 "브라우저에서 HTML을 조립하는 템플릿"으로만 보면 금방 막힌다. React component는 `state + props -> UI`를 계산하는 함수에 가깝고, React는 그 결과를 실제 DOM에 반영하는 런타임에 가깝다.
+
+중요한 것은 jQuery를 낡은 기술로 몰아세우지 않는 것이다. jQuery는 자기 시대의 진짜 문제를 해결했다. 다만 웹 화면이 문서 조작을 넘어 앱처럼 커지자, 더 큰 문제가 앞으로 올라왔다. "DOM을 어떻게 쉽게 바꿀까"보다 "지금 상태라면 화면이 어떻게 보여야 할까"가 더 중요한 질문이 된 것이다.
+
+## jQuery는 브라우저 차이를 견디게 해준 생산성 도구였다
+
+지금은 `document.querySelector`, `addEventListener`, `fetch` 같은 표준 API가 비교적 자연스럽다. 하지만 초기 웹에서는 브라우저마다 DOM API, event 처리, AJAX 요청 방식이 조금씩 달랐다.
+
+개발자는 버튼 하나를 찾아 click handler를 붙이는 일에도 브라우저 차이를 의식해야 했다. 서버와 비동기 통신을 하는 일도 지금처럼 단순하지 않았다. 화면을 조금 바꾸려 했는데, 정작 많은 시간은 "어떤 브라우저에서는 왜 안 되지?"에 쓰였다.
+
+jQuery는 이 문제를 `$()` 중심의 짧고 일관된 API로 감쌌다.
+
+```js
+$(".save-button").on("click", function () {
+  $(".message").text("저장했습니다.");
+});
+```
+
+이 코드는 단순해 보인다. 하지만 당시에는 이 단순함이 컸다.
+
+요소를 찾고, 이벤트를 붙이고, class를 바꾸고, text를 넣고, AJAX 요청을 보내는 작업을 한 가지 스타일로 처리할 수 있었다. 여러 브라우저의 차이는 jQuery가 가능한 만큼 흡수했다.
+
+그래서 jQuery의 가치는 "코드를 짧게 쓴다"에만 있지 않았다. 더 큰 가치는 DOM 조작을 프론트엔드 개발자가 매일 쓸 수 있는 안정적인 도구로 만든 데 있었다.
+
+```text
+브라우저별 DOM 차이
+-> jQuery가 공통 API로 감쌈
+-> 개발자는 화면 조작과 이벤트 처리에 집중
+```
+
+이 흐름을 인정해야 다음 전환도 제대로 보인다. React가 나온 이유는 jQuery가 아무 쓸모 없어서가 아니다. jQuery가 DOM 조작을 충분히 쉽게 만든 뒤, 화면이 더 복잡해지면서 다른 병목이 드러났기 때문이다.
+
+## AJAX는 페이지 전체가 아니라 일부 화면만 바꾸는 경험을 만들었다
+
+jQuery를 이야기할 때 AJAX도 같이 봐야 한다.
+
+초기 웹은 사용자가 링크를 누르거나 form을 제출하면 서버가 새 HTML 페이지를 다시 보내는 방식이 자연스러웠다. 페이지 전체가 새로고침되고, 브라우저는 새 문서를 다시 그렸다.
+
+그런데 검색 자동완성, 댓글 추가, 장바구니 수량 변경, 알림 읽음 처리 같은 기능은 페이지 전체를 다시 받을 필요가 없다. 서버에서 필요한 데이터만 받아 일부 화면만 바꾸면 된다.
+
+AJAX는 이 경험을 열었다.
+
+```text
+사용자 행동
+-> JavaScript가 서버에 비동기 요청
+-> 서버가 데이터 응답
+-> JavaScript가 DOM 일부 갱신
+```
+
+jQuery는 AJAX 요청도 다루기 쉽게 만들었다.
+
+```js
+$.getJSON("/api/products", function (products) {
+  products.forEach((product) => {
+    const item = $("<li>").text(product.name);
+    $("#product-list").append(item);
+  });
+});
+```
+
+지금 보면 `fetch`와 template literal로도 충분히 쓸 수 있는 코드처럼 보인다. 하지만 핵심은 문법이 아니다. 웹 화면이 "서버가 완성한 HTML을 받는 문서"에서 "브라우저가 서버 데이터로 일부 UI를 갱신하는 화면"으로 움직였다는 점이다.
+
+이 변화는 프론트엔드의 책임을 키웠다.
+
+서버가 모든 HTML을 만들 때는 서버 코드 안에 화면 상태가 많이 모여 있었다. AJAX 이후에는 브라우저 쪽 JavaScript가 더 많은 판단을 하게 됐다. 어떤 데이터를 가져올지, 로딩 중에는 무엇을 보여줄지, 성공하면 어느 DOM을 바꿀지, 실패하면 어떤 오류를 표시할지 프론트엔드가 맡기 시작했다.
+
+jQuery는 이 시대의 좋은 도구였다. 문제는 그 다음에 왔다.
+
+## 화면이 커지면 DOM 변경 코드가 상태를 숨긴다
+
+작은 화면에서는 jQuery 방식이 직관적이다.
+
+버튼을 누르면 이 문구를 바꾼다. 목록에 항목을 하나 추가한다. 총액 텍스트를 다시 넣는다. 결제 버튼을 활성화한다.
+
+쇼핑몰 장바구니 예시를 보자.
+
+```js
+$(".add-button").on("click", function () {
+  const name = $(this).data("name");
+  const price = Number($(this).data("price"));
+
+  cart.push({ name, price });
+
+  $("#cart-count").text(cart.length);
+  $("#cart-list").append($("<li>").text(`${name} - ${price}원`));
+  $("#total-price").text(calculateTotal(cart) + "원");
+  $("#checkout-button").prop("disabled", cart.length === 0);
+});
+```
+
+처음에는 괜찮다. 버튼을 누르면 장바구니 배열을 바꾸고 DOM 네 곳을 갱신한다. 코드도 읽힌다.
+
+그런데 기능이 늘어나면 이야기가 달라진다.
+
+장바구니에서 상품을 삭제한다. 수량을 바꾼다. 쿠폰을 적용한다. 배송비가 조건에 따라 바뀐다. 로그인하지 않은 사용자는 결제 버튼을 누를 수 없다. 품절 상품은 별도 메시지를 보여줘야 한다. 모바일에서는 장바구니 요약 영역이 접혀 있다.
+
+이제 같은 상태가 여러 DOM에 영향을 준다.
+
+```text
+cart.length:
+장바구니 badge
+목록 empty message
+결제 button disabled
+header cart icon
+
+totalPrice:
+총액
+무료배송 안내
+쿠폰 적용 가능 여부
+결제 요약 panel
+
+loginState:
+결제 button
+로그인 유도 message
+배송지 form 표시 여부
+```
+
+문제는 DOM을 바꾸는 코드가 여러 event handler에 흩어진다는 것이다.
+
+상품 추가 handler, 상품 삭제 handler, 수량 변경 handler, 쿠폰 적용 handler, 로그인 상태 변경 handler가 각자 DOM을 조금씩 바꾼다. 어느 한 곳에서 `#total-price` 갱신을 빼먹으면 화면은 실제 데이터와 어긋난다. 어떤 handler는 button disabled를 갱신하고, 어떤 handler는 잊어버린다.
+
+이때 어려운 질문은 "DOM을 어떻게 바꿀까"가 아니다.
+
+```text
+현재 데이터 상태는 무엇인가?
+그 상태라면 화면은 어떤 모습이어야 하는가?
+그 관계가 코드 한눈에 보이는가?
+```
+
+jQuery는 DOM을 쉽게 바꾸게 해줬다. 하지만 UI가 커지면 쉬운 DOM 변경 자체가 충분한 답이 되지 않는다. 화면이 왜 지금 이렇게 보이는지 추적하기 어려워진다.
+
+## React는 DOM 변경 순서보다 state와 화면의 관계를 앞에 둔다
+
+React는 질문을 바꾼다.
+
+jQuery식 사고가 "이 이벤트가 생기면 어느 DOM을 어떻게 바꿀까"에 가깝다면, React식 사고는 "현재 state가 이렇다면 화면은 어떻게 보여야 할까"에 가깝다.
+
+```text
+jQuery:
+이벤트 발생 -> 개발자가 DOM 여러 곳을 직접 수정
+
+React:
+이벤트 발생 -> 개발자가 state 수정 -> React가 state 기준으로 화면 재계산
+```
+
+같은 장바구니를 React로 보면 중심이 DOM selector에서 `cart` state로 이동한다.
+
+```jsx
+function ShoppingCart() {
+  const [cart, setCart] = useState([]);
+  const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+  const canCheckout = cart.length > 0;
+
+  return (
+    <section>
+      <p>장바구니 개수: {cart.length}</p>
+      <p>총액: {totalPrice}원</p>
+      <button disabled={!canCheckout}>결제하기</button>
+    </section>
+  );
+}
+```
+
+여기서 개발자가 직접 `#cart-count`, `#total-price`, `#checkout-button`을 찾아 바꾸지 않는다. 대신 현재 `cart`라면 화면이 어떻게 보여야 하는지를 선언한다.
+
+`cart`가 비어 있으면 개수는 0이고, 총액은 0원이고, 결제 버튼은 disabled다. `cart`에 상품이 들어오면 개수와 총액과 버튼 상태가 같은 state에서 다시 계산된다.
+
+이 차이가 React의 핵심이다.
+
+```text
+DOM 위치를 기억하는 코드
+-> state와 UI 관계를 표현하는 코드
+```
+
+React를 쓰면 모든 문제가 사라지는 것은 아니다. 오히려 component 분리, state 위치, effect, data fetching, build, routing 같은 새 고민이 생긴다. 하지만 적어도 복잡한 UI에서 "데이터와 화면의 관계"를 코드의 중심에 둘 수 있다.
+
+## React는 대표 사례이고 Vue와 Angular도 같은 전환에 있다
+
+여기서 한 가지 오해를 막고 가야 한다.
+
+"jQuery에서 React로 넘어갔다"라고 말하면 React만 state 기반 UI이고 Vue나 Angular는 다른 종류인 것처럼 들릴 수 있다. 그렇지 않다.
+
+더 정확한 대비는 이것이다.
+
+```text
+jQuery:
+DOM을 직접 찾아 바꾸는 방식
+
+React, Vue, Angular:
+state/data와 UI의 관계를 선언하고 framework/library가 화면 갱신을 조율하는 방식
+```
+
+React는 이 글에서 대표 사례로 쓰고 있을 뿐이다. Vue와 Angular도 state/data 기반 component UI다. 다만 상태를 추적하고 화면을 갱신하는 표면이 다르다.
+
+| 도구 | 상태 기반 UI를 다루는 방식 | 강한 지점 |
+| --- | --- | --- |
+| React | `state`와 `props`가 바뀌면 component를 다시 실행하고 UI 결과를 비교해 DOM 반영을 조율한다 | 자유도, ecosystem, component 사고 |
+| Vue | `ref`, `reactive` 같은 반응형 data를 추적하고 template을 갱신한다 | template 친화성, 점진 도입, 낮은 진입장벽 |
+| Angular | component class의 data와 template binding을 연결하고 change detection/signals로 화면을 갱신한다 | TypeScript, DI, router, forms까지 포함한 대규모 표준화 |
+
+그러면 React, Vue, Angular는 서로의 한계를 순서대로 해결한 계보일까.
+
+그렇게 보면 흐름이 꼬인다. AngularJS는 React보다 먼저 나왔고, Angular 2+는 AngularJS를 크게 다시 설계한 별도 계열에 가깝다. Vue는 AngularJS의 template 친화성과 React식 component 모델을 더 가볍고 점진적으로 쓰려는 방향에서 성장했다.
+
+따라서 이 흐름은 선형 계보가 아니다.
+
+```text
+부정확한 이해:
+React의 한계 -> Vue가 해결 -> Vue의 한계 -> Angular가 해결
+
+더 정확한 이해:
+jQuery식 DOM 직접 조작의 한계
+-> AngularJS, React, Vue, Angular 2+가 각자 다른 철학으로 해결
+```
+
+React는 `state -> UI` 사고와 one-way data flow를 강하게 밀었다. Vue는 template 중심의 읽기 쉬움과 점진 도입을 택했다. Angular는 큰 팀과 큰 앱을 위해 router, form, DI, build, test 구조까지 framework가 강하게 제공하는 쪽을 택했다.
+
+그래서 이 글의 제목은 "jQuery에서 React로"지만, 더 넓은 의미의 전환은 "DOM 직접 조작에서 state/data 기반 component UI로"다. React는 그 전환을 설명하기 위한 가장 익숙한 예시로 보면 된다.
+
+## 백엔드 개발자에게 React는 요청마다 끝나는 템플릿 렌더링이 아니다
+
+백엔드 개발자가 React를 이해할 때 가장 먼저 버려야 할 착각은 "서버 템플릿을 브라우저로 옮긴 것"이라는 감각이다.
+
+서버 쪽에서는 보통 요청이 들어오면 데이터를 조회하고, 템플릿에 넣고, HTML 응답을 보낸 뒤 한 번의 흐름이 끝난다.
+
+```js
+function getUserPage(userId) {
+  const user = userService.find(userId);
+  return renderTemplate("user.html", { user });
+}
+```
+
+React component도 겉으로는 비슷해 보인다.
+
+```jsx
+function UserPage({ user }) {
+  return <h1>{user.name}</h1>;
+}
+```
+
+하지만 실행 모델은 다르다. 백엔드 요청 처리는 한 번 처리하고 끝나는 경우가 많지만, React component는 브라우저 안에서 계속 다시 실행될 수 있다.
+
+```text
+사용자 클릭
+-> state 변경
+-> component 다시 실행
+-> React가 새 UI 결과 계산
+-> 이전 결과와 비교
+-> 필요한 DOM 변경 반영
+```
+
+그래서 React component 본문은 "이번 요청을 처리하는 procedure"가 아니라 "현재 입력값에서 UI를 계산하는 render 함수"에 가깝다. 이 차이를 놓치면 component 본문에 API 호출, 직접 DOM 조작, random 값 생성, mutable object 변경 같은 부작용을 자연스럽게 넣게 된다.
+
+백엔드 감각으로 React를 대응시켜 보면 대략 이렇게 잡을 수 있다.
+
+| 백엔드에서 익숙한 감각 | React에서 가까운 개념 |
+| --- | --- |
+| view template 또는 partial | component |
+| method parameter, DTO | props |
+| 요청 중 계산한 값 | derived value |
+| 브라우저 쪽에서 보존해야 하는 값 | state |
+| controller action 또는 event callback | `onClick`, `onChange` handler |
+| 외부 API, browser API, timer와의 동기화 | `useEffect` 또는 query library |
+
+여기서 state를 DB나 서버 session처럼 이해하면 안 된다. React state는 기본적으로 브라우저 쪽 component가 렌더링 사이에 기억하는 값이다. 원본이 서버에 있는 게시글 목록이나 사용자 정보는 server state로 따로 봐야 한다.
+
+이 관점으로 보면 React의 기본 문장은 짧아진다.
+
+```text
+React component = state와 props를 받아 UI를 계산하는 함수
+React runtime = state 변화에 맞춰 component를 다시 실행하고 DOM 반영을 조율하는 쪽
+```
+
+3편의 나머지 개념은 거의 이 문장에서 뻗어 나온다. JSX는 그 UI 계산을 쓰는 문법이고, reconciliation은 이전 UI 결과와 새 UI 결과를 비교하는 과정이다. Hooks는 component가 기억해야 할 값과 외부 동기화를 다루는 표면이고, 상태관리 도구는 값의 소유권이 어디에 있는지에 따라 갈라진다.
+
+## JSX는 HTML을 JavaScript에 억지로 넣은 문법이 아니다
+
+React를 처음 보면 JSX가 가장 이상해 보인다.
+
+JavaScript 파일 안에 HTML처럼 생긴 코드가 들어 있다.
+
+```jsx
+<button disabled={cart.length === 0}>
+  결제하기
+</button>
+```
+
+처음에는 관심사 분리가 깨진 것처럼 느껴진다. HTML은 HTML 파일에, JavaScript는 JS 파일에 있어야 할 것 같다.
+
+하지만 React가 분리하려는 기준은 파일 확장자가 아니다. React가 붙잡는 기준은 state와 UI의 관계다.
+
+`disabled={cart.length === 0}`를 보면 버튼 상태가 어디서 오는지 바로 보인다. 장바구니가 비어 있으면 버튼은 비활성화된다. 이 관계가 버튼 근처에 있다.
+
+목록도 마찬가지다.
+
+```jsx
+<ul>
+  {cart.map((item) => (
+    <li key={item.id}>
+      {item.name} - {item.price}원
+    </li>
+  ))}
+</ul>
+```
+
+여기서 UI는 고정 HTML 조각이 아니다. 현재 `cart` state를 가지고 계산한 결과다. JSX는 이 계산을 JavaScript 안에서 UI 구조와 함께 표현하게 해준다.
+
+그래서 JSX를 이렇게 이해하는 편이 좋다.
+
+```text
+HTML을 JS에 섞은 문법
+```
+
+보다는
+
+```text
+현재 state에서 나올 UI 구조를 JavaScript 표현식으로 쓰는 문법
+```
+
+에 가깝다.
+
+물론 JSX가 실제 브라우저에서 그대로 실행되는 것은 아니다. 빌드 과정에서 JavaScript 호출 형태로 변환된다. 이 이야기는 4편에서 Node.js, npm, build tool을 다룰 때 다시 나온다.
+
+3편에서는 JSX를 외워야 할 문법으로 보지 말고, React가 state와 UI 관계를 한곳에서 표현하기 위해 선택한 표면으로 보면 된다.
+
+## Virtual DOM과 reconciliation은 DOM 반영 책임을 React 쪽으로 옮긴다
+
+React가 state에서 화면을 계산한다고 해서 브라우저 DOM이 사라지는 것은 아니다.
+
+마지막에는 결국 DOM이 바뀐다. 2편에서 봤듯이 브라우저는 DOM과 CSSOM을 바탕으로 render tree, layout, paint, composite를 거쳐 화면을 만든다. React도 이 브라우저 모델 위에서 동작한다.
+
+다만 React는 개발자가 직접 DOM 여러 곳을 찾아 바꾸는 일을 줄인다.
+
+```text
+props/state 변경
+-> component render
+-> 새 UI 결과 계산
+-> 이전 결과와 비교
+-> 필요한 DOM 변경 반영
+```
+
+이 과정에서 자주 나오는 단어가 Virtual DOM과 reconciliation이다.
+
+Virtual DOM은 실제 DOM을 매번 직접 만지는 대신 React가 메모리 안에서 계산하는 UI 구조로 이해하면 된다. Reconciliation은 이전 UI 결과와 새 UI 결과를 비교해 무엇을 유지하고 무엇을 바꿀지 결정하는 과정이다.
+
+목록의 `key`가 중요한 이유도 여기에 있다.
+
+```jsx
+{cart.map((item) => (
+  <CartItem key={item.id} item={item} />
+))}
+```
+
+`key`는 React에게 "이 항목은 같은 항목이다"라고 알려주는 identity 힌트다. index를 대충 key로 쓰면 항목이 추가되거나 삭제될 때 React가 어떤 항목을 유지해야 하는지 헷갈릴 수 있다. 특히 input이 들어간 목록에서는 값이나 focus가 엉뚱하게 이어지는 문제가 생길 수 있다.
+
+여기서 조심할 점도 있다.
+
+Virtual DOM은 마법의 성능 장치가 아니다. "React를 쓰면 무조건 빠르다"가 아니다. React의 핵심 장점은 개발자가 DOM 변경 순서를 직접 관리하는 부담을 줄이고, state에서 UI를 계산하는 모델을 제공한다는 데 있다.
+
+성능은 여전히 component 구조, state 범위, memoization 필요성, list key, browser rendering 비용, data fetching 구조에 따라 달라진다.
+
+## Hooks는 함수형 component에 기억과 외부 동기화를 붙인다
+
+React를 쓰다 보면 `useState`, `useEffect`, `useRef`, `useMemo` 같은 hook을 만나게 된다.
+
+Hook은 함수형 component 안에서 React 기능을 쓰게 해주는 표면이다. 그중 `useState`는 component가 기억해야 할 값을 만든다.
+
+```jsx
+function SearchBox() {
+  const [keyword, setKeyword] = useState("");
+
+  return (
+    <input
+      value={keyword}
+      onChange={(event) => setKeyword(event.target.value)}
+    />
+  );
+}
+```
+
+일반 JavaScript 함수는 실행이 끝나면 지역 변수가 사라진다. 하지만 React component는 렌더링 사이에 유지해야 할 값이 있다. 입력값, modal open 여부, 선택된 tab, 장바구니 목록 같은 값이다. `useState`는 이런 local UI state를 React가 보존하게 해준다.
+
+`useEffect`는 조금 더 조심해서 봐야 한다.
+
+Effect는 렌더링 결과를 React 바깥의 시스템과 동기화할 때 쓴다. API 요청, browser event listener, timer, subscription, document title 변경처럼 외부 세계와 맞물리는 작업이 대표적이다.
+
+반대로 props나 state에서 바로 계산할 수 있는 값은 effect로 다시 state에 저장하지 않는 편이 좋다.
+
+```jsx
+const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+```
+
+이 값은 `cart`에서 바로 계산된다. 굳이 `useEffect`로 `totalPrice` state를 따로 만들면 동기화해야 할 값이 하나 늘어난다. 실제 state와 파생 state가 어긋날 가능성도 생긴다.
+
+React 학습에서 중요한 감각은 이것이다.
+
+```text
+state:
+사용자 행동이나 외부 입력 때문에 React가 기억해야 하는 값
+
+derived value:
+현재 props/state에서 렌더링 중 바로 계산할 수 있는 값
+
+effect:
+렌더링 결과를 외부 시스템과 맞추기 위한 작업
+```
+
+Hook은 편한 도구지만 아무 곳에나 넣는 주문이 아니다. 어떤 값이 state인지, 어떤 값은 계산 결과인지, 어떤 작업이 외부 동기화인지 구분할 때 React 코드가 안정된다.
+
+## Controlled form은 input 값의 기준을 DOM에서 state로 옮긴다
+
+Form은 jQuery와 React의 차이가 잘 보이는 곳이다.
+
+DOM 중심 방식에서는 input에 값이 있고, 제출 시점에 그 값을 읽어올 수 있다. 작은 form에서는 충분히 자연스럽다.
+
+React의 controlled form은 기준을 바꾼다. Input 값의 source of truth를 DOM이 아니라 React state에 둔다.
+
+```jsx
+function SignupForm() {
+  const [name, setName] = useState("");
+  const trimmedName = name.trim();
+  const canSubmit = trimmedName.length > 0;
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    if (!canSubmit) return;
+
+    submitToServer({ name: trimmedName });
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>
+        이름
+        <input
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
+      </label>
+      <button disabled={!canSubmit}>가입하기</button>
+    </form>
+  );
+}
+```
+
+사용자가 입력하면 `onChange`가 실행되고, React state가 바뀐다. 화면의 input value도 그 state를 기준으로 다시 그려진다.
+
+이 구조의 장점은 제출 전 검증이 자연스럽다는 것이다.
+
+`name.trim()`으로 공백을 제거한 값을 만들 수 있다. `canSubmit`으로 버튼 disabled 상태를 계산할 수 있다. 오류 메시지 표시도 같은 state에서 계산할 수 있다.
+
+물론 실무 form은 이것보다 복잡하다. 사용자가 아직 아무것도 하지 않았는데 빨간 오류를 먼저 보여주면 불편하다. 그래서 `touched`, `dirty`, `submitted` 같은 상태를 함께 둔다. 필드가 많아지면 form library를 쓰기도 한다.
+
+하지만 입문 단계에서 붙잡을 모델은 단순하다.
+
+```text
+input value를 React state가 소유한다
+-> 검증과 button 상태와 오류 표시를 같은 state에서 계산한다
+-> 제출할 데이터도 그 state에서 만든다
+```
+
+이 모델은 AI에게 form을 맡길 때도 유용하다. "입력값을 state로 제어하고, trim된 값 기준으로 제출 가능 여부와 오류 메시지를 계산해줘"라고 말하면 요구가 훨씬 선명해진다.
+
+## 모든 상태를 한 도구로 몰아넣으면 React 코드가 다시 꼬인다
+
+React를 배우면 곧바로 상태관리 도구 이름이 몰려온다.
+
+Redux, Zustand, React Query, SWR, Context, reducer, store. 처음에는 전부 "상태관리"처럼 보인다.
+
+하지만 모든 상태가 같은 문제는 아니다. 값을 누가 소유하는지, 어떻게 동기화해야 하는지에 따라 도구가 달라진다.
+
+대략 이렇게 나누면 길이 보인다.
+
+| 값의 종류 | 예시 | 먼저 생각할 도구 |
+| --- | --- | --- |
+| props | 부모가 넘기는 `user`, `items`, `onSelect` | component interface |
+| local state | input 값, modal open, selected tab | `useState`, `useReducer` |
+| derived value | `name.trim()`, `cartTotal`, `canSubmit` | state로 저장하지 않고 계산 |
+| server state | 게시글 목록, 검색 결과, 사용자 API 응답 | React Query, SWR |
+| global client state | theme, sidebar, app-wide selection | Context, Redux, Zustand |
+
+Server state는 이름이 중요하다. 이 값은 브라우저가 진짜로 소유한 값이 아니다. 원본은 서버에 있다. 클라이언트는 API 응답을 받아 잠시 들고 있고, stale 여부, refetch, cache, loading, error, mutation 성공 후 invalidation 같은 문제를 처리해야 한다.
+
+그래서 React Query나 SWR은 server state에 맞다.
+
+반대로 Redux나 Zustand는 여러 component가 공유하는 client state에 더 가깝다. 예를 들어 theme, sidebar open 여부, app-wide 선택 상태처럼 클라이언트 앱이 소유하는 값이다.
+
+이 구분이 없으면 React 코드는 다시 꼬인다.
+
+서버에서 온 게시글 목록을 전역 client store에 넣고 직접 갱신하다가 cache와 refetch 정책이 흐려질 수 있다. 반대로 단순한 modal open 상태에 무거운 server state 도구를 붙이면 과하다.
+
+React의 전환이 "DOM에서 state로"였다고 해서 모든 것을 하나의 거대한 state로 몰아넣으라는 뜻은 아니다. 좋은 React 코드는 state를 더 많이 만드는 코드가 아니라, 어떤 값이 어느 층의 책임인지 잘 나누는 코드다.
+
+## React는 UI library이고, 웹 애플리케이션 전체 답은 아니다
+
+React가 해결한 핵심 문제는 UI state와 화면 갱신이다.
+
+하지만 실제 웹 서비스를 만들려면 UI만으로는 부족하다.
+
+URL routing이 필요하다. API data fetching 정책이 필요하다. Form 처리 기준이 필요하다. Error boundary와 loading UI가 필요하다. SEO가 필요한 페이지라면 서버 렌더링이나 정적 생성도 검토해야 한다. 인증, 권한, cache, image optimization, metadata, 배포 구조도 고민해야 한다.
+
+React 자체는 이 모든 것을 하나로 강하게 정해주는 full framework가 아니다. React는 UI library에 가깝다.
+
+```text
+React:
+component와 state 기반 UI 갱신
+
+Next.js:
+React 위에 routing, rendering, metadata, cache, server 기능을 붙인 web application framework
+```
+
+그래서 "React를 배웠다"와 "운영 가능한 웹 서비스를 설계할 수 있다" 사이에는 간격이 있다.
+
+이 간격을 메우기 위해 React Router, TanStack Query, form library, 상태관리 도구, build tool, Next.js 같은 선택지가 등장한다. 선택지가 많다는 것은 자유도가 높다는 뜻이지만, 팀 표준을 정하지 않으면 프로젝트마다 구조가 흔들릴 수 있다는 뜻이기도 하다.
+
+4편에서 Node.js와 npm과 build tool을 다루는 이유가 여기에 있다.
+
+React component는 브라우저가 그대로 이해하는 최종 산물이 아니다. JSX와 TypeScript와 package import는 build 과정을 거쳐야 한다. 외부 library는 npm으로 설치하고, dependency version은 lockfile로 고정해야 한다. 개발용 코드와 배포용 코드는 요구가 다르다.
+
+React를 제대로 쓰려면 결국 "왜 프론트엔드에 Node.js와 npm과 build가 필요한가"라는 다음 질문으로 넘어가야 한다.
+
+## AI에게 React를 맡길 때는 상태의 소유권을 먼저 말해야 한다
+
+바이브코딩에서 "React로 만들어줘"는 시작 문장일 수 있지만 충분한 요구사항은 아니다.
+
+React 코드의 품질은 상태를 어떻게 나누는지에서 많이 갈린다. AI에게 기술명만 던지면 모든 값을 `useState`로 만들거나, 필요 없는 `useEffect`를 남발하거나, server state와 client state를 섞을 수 있다.
+
+요청을 이렇게 바꾸면 더 낫다.
+
+```text
+이 화면을 React component로 만들어 주세요.
+
+장바구니 목록은 local state로 두고,
+총액과 결제 가능 여부는 cart에서 계산한 derived value로 처리해 주세요.
+
+input은 controlled form으로 만들고,
+trim된 값 기준으로 submit 가능 여부와 오류 메시지를 계산해 주세요.
+
+API에서 가져오는 상품 목록은 server state로 보고,
+loading, error, empty state를 분리해 주세요.
+
+DOM을 직접 querySelector로 조작하지 말고,
+state와 props 흐름으로 화면이 갱신되게 작성해 주세요.
+
+component 본문은 여러 번 실행될 수 있으니,
+API 호출이나 timer 같은 부작용은 본문에 직접 두지 말고
+effect나 server state 도구의 책임으로 나눠 주세요.
+```
+
+검토할 때도 질문이 달라진다.
+
+```text
+이 값은 정말 state여야 하는가?
+props에서 계산할 수 있는 값을 다시 state로 저장하지 않았는가?
+effect가 외부 동기화가 아니라 단순 계산에 쓰이지 않았는가?
+server state와 client state가 섞이지 않았는가?
+list key가 stable id인가?
+form의 source of truth가 분명한가?
+component를 한 번 실행되고 끝나는 request handler처럼 작성하지 않았는가?
+```
+
+이 질문들이 있어야 AI가 만든 React 코드를 판단할 수 있다.
+
+React는 DOM 조작을 숨겨주지만, 사고를 대신해주지는 않는다. 어떤 상태가 있고, 그 상태에서 화면이 어떻게 계산되어야 하는지 결정하는 일은 여전히 개발자의 책임이다.
+
+## 전환의 핵심은 기술 유행이 아니라 질문의 변화다
+
+jQuery에서 React로 넘어간 흐름은 단순히 오래된 기술이 새 기술로 교체된 이야기가 아니다.
+
+jQuery는 브라우저 차이와 DOM 조작의 불편함을 줄였다. AJAX와 함께 페이지 일부를 부드럽게 갱신하는 웹 경험을 만들었다. 그 역할은 분명히 컸다.
+
+하지만 화면이 커지고 상태가 많아지면서 더 어려운 문제가 드러났다. DOM을 쉽게 바꾸는 것만으로는 화면의 일관성을 지키기 어려웠다. 데이터 상태와 DOM 변경 코드가 여러 event handler에 흩어지면, 화면이 왜 지금 이렇게 보이는지 추적하기 어려워졌다.
+
+React를 대표로 한 현대 UI 도구들은 이 질문을 바꿨다.
+
+```text
+어느 DOM을 바꿀까?
+```
+
+에서
+
+```text
+현재 state라면 화면은 어떻게 보여야 할까?
+```
+
+로 옮긴 것이다.
+
+이 전환을 이해하면 React가 갑자기 덜 낯설어진다. Vue와 Angular도 완전히 다른 세계가 아니라 같은 문제를 다른 문법과 철학으로 푼 선택지로 보인다. JSX, component, props, state, hooks, reconciliation은 모두 이 질문을 중심으로 이어진다.
+
+다음 편에서는 React를 쓰면서 자연스럽게 따라오는 또 다른 질문으로 넘어간다.
+
+브라우저에서 실행되는 JavaScript를 쓰는 것 같은데, 왜 개발 환경에는 Node.js가 필요할까. 왜 npm으로 package를 설치하고, 왜 build tool이 코드를 다시 묶고 변환해야 할까.
+
+4편의 주제는 Node.js, npm, 그리고 frontend build다.
+
+## 함께 읽으면 좋은 글
+
+- [AI 웹개발 기초: 프론트엔드 1-2 | DOM은 화면이 아니라 브라우저의 작업 모델이다](/posts/2026-05-12-web-frontend-02-browser-dom-reflow)
+- frontend basics for vibe coders
+- [AI 웹개발 기초: 프론트엔드 1-4 | React를 쓰는데 왜 Node.js와 npm이 필요할까](/posts/2026-05-12-web-frontend-04-node-npm-build)
