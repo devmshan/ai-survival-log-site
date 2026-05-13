@@ -39,6 +39,11 @@ export const metadata: Metadata = {
     title: 'devsurvivallog',
     description: 'AI로 수렴하고, 나의 언어로 발산하는 개발자 학습 로그',
   },
+  verification: {
+    other: {
+      'naver-site-verification': '720b664d0abe27aa5f55411e9336ac37fd00f6f7',
+    },
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

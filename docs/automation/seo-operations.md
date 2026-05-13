@@ -71,6 +71,8 @@
 
 ## 검색엔진 제출 체크리스트
 
+URL별 제출/검증 상태는 [docs/automation/search-index-sheets/search-index-submission-summary.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/automation/search-index-sheets/search-index-submission-summary.md), [docs/automation/search-index-sheets/search-index-action-plan.md](/Users/ms/workspace/claude/ai-survival-log-site/docs/automation/search-index-sheets/search-index-action-plan.md), Google/Naver CSV 시트에서 추적한다.
+
 ### Google Search Console
 
 - [ ] 사이트 속성 등록
