@@ -5,7 +5,7 @@ Scope: `https://devsurvivallog.com` published post URLs only
 
 ## 결정
 
-Google/Naver 모두 `P0 12개 -> P1 16개 -> 3/7/14일 모니터링` 순서로 진행한다. 현재 공개 `robots.txt`와 `sitemap.xml`은 통과했지만, repo 안에 URL별 Search Console/Search Advisor 제출 완료 ledger가 없으므로 모든 URL은 `todo/evidence-missing` 상태에서 시작한다.
+Google/Naver 모두 `P0 12개 -> P1 16개 -> 3/7/14일 모니터링` 순서로 진행한다. 현재 공개 `robots.txt`와 `sitemap.xml`은 통과했다. 2026-05-13에 P0 12개 URL은 Google Search Console URL Inspection 색인 생성 요청과 Naver Search Advisor 웹 페이지 수집 요청을 완료했고, P1 16개는 아직 `todo/evidence-missing` 상태다.
 
 ## 우선순위
 

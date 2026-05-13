@@ -13,13 +13,14 @@ Generated from local post files. This report does not call Google or Naver APIs.
 | Sitemap status | present |
 | Google P0 rows | 12 |
 | Naver P0 rows | 12 |
+| P0 manual submission | Google/Naver 12 URLs submitted on 2026-05-13 |
 
 ## Interpretation
 
 - `todo`는 URL별 제출 완료 증거가 시트/저장소에 없다는 뜻이다.
 - `evidence-missing`은 외부 콘솔에서는 이미 처리됐을 수 있으므로, 미실행 확정 전에 Search Console/Search Advisor에서 다시 확인해야 한다는 뜻이다.
-- Google P0 URL은 Search Console URL Inspection에서 확인하고 색인 생성 요청을 진행한다.
-- Naver P0 URL은 Search Advisor 소유 확인 이후 웹 페이지 수집 요청으로 처리한다.
+- P0 URL은 2026-05-13에 Google Search Console URL Inspection 색인 생성 요청과 Naver Search Advisor 웹 페이지 수집 요청을 완료한 것으로 기록했다.
+- 다음 확인일은 2026-05-16, 2026-05-20, 2026-05-27이다.
 - Google Indexing API는 일반 블로그 글 제출 경로가 아니다.
 - Naver IndexNow는 새 URL/변경 URL 알림에는 쓸 수 있지만, Search Advisor 수집요청, RSS, sitemap 제출을 대체하지 않는다.
 
